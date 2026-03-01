@@ -3,6 +3,11 @@ import json
 import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
+import os
+from database import save_to_db
+import sqlite3
+
+
 
 warnings.filterwarnings("ignore")
 
@@ -25,7 +30,7 @@ def extract_audio(input_path, output_path="temp.wav"):
 
 
 def transcribe_audio(input_path, output_path="transcript.json"):
-    model = WhisperModel("distil-large-v3", device="cuda", compute_type="float")
+    model = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
 
     segments, info = model.transcribe(input_path, beam_size=5,vad_filter=True)
     
@@ -44,8 +49,14 @@ def transcribe_audio(input_path, output_path="transcript.json"):
     print(f"Transcript saved to {output_path}")
     return transcript
 
+def get_file_name(path):
+    file_name = os.path.basename(path)
+    return file_name
 
-
+def get_duration(path):
+    probe = ffmpeg.probe(path)
+    duration = float(probe["format"]["duration"])
+    return duration
 
 if __name__ == "__main__":
     
@@ -53,9 +64,20 @@ if __name__ == "__main__":
     start = time.time()
 
     audio_path = extract_audio(path)
+    file_name = get_file_name(path)
+    duration = get_duration(path)
 
     if audio_path:
-        transcribe_audio(audio_path)
+        transcript = transcribe_audio(audio_path)
+
+        connection = sqlite3.connect("brain.db")
+
+        save_to_db(path,file_name,duration,transcript)
+        connection.close()
+
+
+
+
     end = time.time()
 
-    print("Exceution time:",end-start)
+    print("Execution time:",end-start)

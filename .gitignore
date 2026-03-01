@@ -2,3 +2,4 @@
 *.db
 *.mp4
 *.wav
+__pycache__
