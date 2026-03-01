@@ -20,20 +20,19 @@ app.add_middleware(
 
 @app.post("/query")
 def query(item: Item):
-    print(str(item))
-    return item
-
-    
-    # try:
-    #     create_table = "CREATE TABLE IF NOT EXISTS queries (date TEXT PRIMARY KEY, query TEXT NOT NULL);"
-    #     now = datetime.datetime.now()
-    #     insert_values = "INSERT INTO artists (date,query) VALUES(" + str(now) + ");"
-
-    #     # Creating table and inserting the date and query into it
-    #     with sqlite3.connect("backend.db") as conn:
-    #         cursor = conn.cursor()
-    #         cursor.execute(create_table)
-    #         conn.commit()
-    # except sqlite3.OperationalError as e:
-    #     print(e)
+    query_string = str(item)
+    query = query_string.strip("query=")
+    try:
+        create_table = "CREATE TABLE IF NOT EXISTS queries (date TEXT PRIMARY KEY, query TEXT NOT NULL);"
+        now = datetime.datetime.now()
+        date = str(now)
+        insert_values = "INSERT INTO queries (date,query) VALUES(" + "'" + date + "'" + "," + query + ");"
+        # Creating table and inserting the date and query into it
+        with sqlite3.connect("backend.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(create_table)
+            cursor.execute(insert_values)
+            conn.commit()
+    except sqlite3.OperationalError as e:
+        print("Sqlite error:", e)
 
