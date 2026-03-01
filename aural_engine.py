@@ -49,14 +49,17 @@ def transcribe_audio(input_path, output_path="transcript.json"):
     print(f"Transcript saved to {output_path}")
     return transcript
 
+
 def get_file_name(path):
     file_name = os.path.basename(path)
     return file_name
+
 
 def get_duration(path):
     probe = ffmpeg.probe(path)
     duration = float(probe["format"]["duration"])
     return duration
+
 
 if __name__ == "__main__":
     

@@ -2,59 +2,63 @@ import sqlite3
 import json
 import os
 
-connection = sqlite3.connect("brain.db")
+DATABASE_PATH = "brain.db"
 
 #create table
 
-mediaFiles_create_table = """
+def initialize_db():
 
-CREATE TABLE IF NOT EXISTS media_files (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-file_path TEXT UNIQUE NOT NULL,
-file_name TEXT NOT NULL,
-duration_seconds REAL,
-added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-status TEXT DEFAULT 'pending' --pending,processing,indexed,error
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        mediaFiles_create_table = """
 
-
-)
-
-"""
+        CREATE TABLE IF NOT EXISTS media_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        file_path TEXT UNIQUE NOT NULL,
+        file_name TEXT NOT NULL,
+        duration_seconds REAL,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status TEXT DEFAULT 'pending' --pending,processing,indexed,error
 
 
-transcript_fts ="""
+        )
 
-CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts USING fts5(
-    media_id UNINDEXED ,
-    start_time UNINDEXED,
-    end_time UNINDEXED,
-    content,
-    file_name
-    );
-"""
+        """
 
 
-cursor = connection.cursor()
+        transcript_fts ="""
+
+        CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts USING fts5(
+            media_id UNINDEXED ,
+            start_time UNINDEXED,
+            end_time UNINDEXED,
+            content,
+            file_name
+            );
+        """
 
 
-
-try:
-    cursor.execute(mediaFiles_create_table)
-    connection.commit()
-except Exception as e:
-    print(f"media_files error: {e}")
-    connection.rollback()
+        cursor = connection.cursor()
 
 
 
-try:
-    cursor.execute(transcript_fts)
-    connection.commit()
-except Exception as e:
-    print(f"transcripts_fts error: {e}")
-    connection.rollback()
+        try:
+            cursor.execute(mediaFiles_create_table)
+            connection.commit()
+        except Exception as e:
+            print(f"media_files error: {e}")
+            connection.rollback()
 
 
+
+        try:
+            cursor.execute(transcript_fts)
+            connection.commit()
+        except Exception as e:
+            print(f"transcripts_fts error: {e}")
+            connection.rollback()
+
+
+#initialize_db()
 
 #FOR SAVING TRANSCRIPT
 def save_to_db(file_path,file_name,duration,transcript_data):
