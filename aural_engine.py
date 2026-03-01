@@ -4,10 +4,10 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from database import save_to_db
+from database import save_to_db,search_to_json
 import sqlite3
 
-
+#need to clean up the sql connections.
 
 warnings.filterwarnings("ignore")
 
@@ -30,7 +30,7 @@ def extract_audio(input_path, output_path="temp.wav"):
 
 
 def transcribe_audio(input_path, output_path="transcript.json"):
-    model = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
+    model = WhisperModel("distil-large-v3", device="cpu", compute_type="int8")
 
     segments, info = model.transcribe(input_path, beam_size=5,vad_filter=True)
     
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         save_to_db(path,file_name,duration,transcript)
         connection.close()
-
+ 
 
 
 

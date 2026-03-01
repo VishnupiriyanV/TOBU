@@ -1,5 +1,5 @@
 import sqlite3
-import pandas as pd 
+import json
 
 
 connection = sqlite3.connect("brain.db")
@@ -11,7 +11,7 @@ mediaFiles_create_table = """
 CREATE TABLE IF NOT EXISTS media_files (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 file_path TEXT UNIQUE NOT NULL,
-file_name TEXT UNIQUE NOT NULL,
+file_name TEXT NOT NULL,
 duration_seconds REAL,
 added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 status TEXT DEFAULT 'pending' --pending,processing,indexed,error
@@ -24,16 +24,13 @@ status TEXT DEFAULT 'pending' --pending,processing,indexed,error
 
 transcript_fts ="""
 
-CREATE VIRTUAL TABLE transcripts_fts USING fts5(
+CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts USING fts5(
     media_id UNINDEXED ,
     start_time UNINDEXED,
     end_time UNINDEXED,
     content,
     file_name
-
-);
-
-
+    );
 """
 
 
@@ -48,12 +45,7 @@ except Exception as e:
     print(f"media_files error: {e}")
     connection.rollback()
 
-try:
-    cursor.execute("DROP TABLE IF EXISTS transcripts_fts")
-    connection.commit()
-except Exception as e:
-    print(f"drop error: {e}")
-    connection.rollback()
+
 
 try:
     cursor.execute(transcript_fts)
@@ -95,6 +87,38 @@ def save_to_db(file_path,file_name,duration,transcript_data):
 
     connection.close()
 
+
+#for final json
+
+def search_to_json(query, output_file="search_results.json"):
+    with sqlite3.connect("brain.db") as connection:
+        
+        connection.row_factory = sqlite3.Row 
+        cursor = connection.cursor()
+        
+        search_query = """
+            SELECT 
+                f.file_name, 
+                f.file_path, 
+                t.start_time, 
+                t.end_time, 
+                t.content as text
+            FROM transcripts_fts t
+            JOIN media_files f ON t.media_id = f.id
+            WHERE t.content MATCH ? 
+            ORDER BY rank 
+            LIMIT 50
+        """
+        
+
+        cursor.execute(search_query, (query,))
+        rows = cursor.fetchall()
+        
+        results = [dict(row) for row in rows]
+        
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=4, ensure_ascii=False)
+            
 
 
 
