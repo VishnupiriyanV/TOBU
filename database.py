@@ -1,6 +1,6 @@
 import sqlite3
 import json
-
+import os
 
 connection = sqlite3.connect("brain.db")
 
@@ -114,7 +114,15 @@ def search_to_json(query, output_file="search_results.json"):
         cursor.execute(search_query, (query,))
         rows = cursor.fetchall()
         
-        results = [dict(row) for row in rows]
+        results = []
+        for row in rows:
+            results.append({
+                "file-name": row["file_name"],
+                "file-path": os.path.abspath(row["file_path"]), 
+                "start": row["start_time"],
+                "end": row["end_time"],
+                "text": row["text"]
+                })
         
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=4, ensure_ascii=False)

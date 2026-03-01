@@ -1,23 +1,23 @@
 [
     {
-        "file_name": "test.mp4",
-        "file_path": "test.mp4",
-        "start_time": 272.28,
-        "end_time": 273.78,
+        "file-name": "test.mp4",
+        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
+        "start": 272.28,
+        "end": 273.78,
         "text": "of the pseudocode."
     },
     {
-        "file_name": "test.mp4",
-        "file_path": "test.mp4",
-        "start_time": 273.78,
-        "end_time": 277.72,
+        "file-name": "test.mp4",
+        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
+        "start": 273.78,
+        "end": 277.72,
         "text": "Depending on how that pseudocode gets translated into an actual programming language, like C or"
     },
     {
-        "file_name": "test.mp4",
-        "file_path": "test.mp4",
-        "start_time": 250.74,
-        "end_time": 255.28,
+        "file-name": "test.mp4",
+        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
+        "start": 250.74,
+        "end": 255.28,
         "text": "So we wrote that subroutine down in pseudocode, and we gave an analysis of 4M plus 2 on the"
     }
 ]
