@@ -1,10 +1,11 @@
 import ffmpeg
 import json
 import warnings
-from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 
 warnings.filterwarnings("ignore")
+
 
 
 def extract_audio(input_path, output_path="temp.wav"):
@@ -24,10 +25,10 @@ def extract_audio(input_path, output_path="temp.wav"):
 
 
 def transcribe_audio(input_path, output_path="transcript.json"):
-    model = WhisperModel("large-v3-turbo", device="cuda", compute_type="float16")
+    model = WhisperModel("distil-large-v3", device="cuda", compute_type="float")
 
-    segments, info = model.transcribe(input_path, beam_size=5)
-
+    segments, info = model.transcribe(input_path, beam_size=5,vad_filter=True)
+    
     transcript = []
     for segment in segments:
         transcript.append({
@@ -37,6 +38,7 @@ def transcribe_audio(input_path, output_path="transcript.json"):
         })
 
     with open(output_path, "w", encoding="utf-8") as f:
+
         json.dump(transcript, f, indent=2, ensure_ascii=False)
 
     print(f"Transcript saved to {output_path}")
