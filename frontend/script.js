@@ -7,7 +7,6 @@ form.onsubmit = function(event){
         const response = fetch("http://127.0.0.1:8000/query", {
             method: "POST",
             headers: {
-                "accept": "application/json",
                 "Content-type": "application/json",
             },
             body: JSON.stringify(Object.fromEntries(formData)),
