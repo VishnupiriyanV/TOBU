@@ -2,6 +2,7 @@ async function getResult() {
     const response = await fetch('http://127.0.0.1:8000/result');
     const json = await response.json();
     let size = Object.keys(json).length;
+    if (size>0) {
     for (let i = 0; i < size; i++) {
         let box_json = json[i];
         //result-box
@@ -61,6 +62,28 @@ async function getResult() {
         result_box.appendChild(result_element);
         document.getElementById('result-text' + i).innerHTML += box_json["text"];
     }
+}   else {
+    randomImage();
+}
     
 }
+
+function randomImage() {
+    let error_div = document.getElementById('error');
+    let img = document.createElement("img");
+    img.className = 'error-img';
+    img.src = 'imgs/no-result/error-' + getRndInteger(1,4) + '.png'
+    error_div.appendChild(img);
+    let error_text =  document.createElement("div");
+    error_text.id = "no-result";
+    error_text.className = "no-result";
+    error_div.appendChild(error_text);
+    document.getElementById('no-result').innerHTML += "No results found :/";
+    
+}
+
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
 getResult()

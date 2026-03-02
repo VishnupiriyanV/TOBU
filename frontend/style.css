@@ -203,3 +203,24 @@ footer {
     color:red;
     display: inline;
 }
+
+.no-result {
+    color: white;
+    display: flex;
+    justify-content: center;
+    font-size: 28px;
+    margin-top: 20px;
+}
+
+.error-img {
+    width:400px;
+    height: auto;
+    margin-top: 80px;
+}
+
+.error {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
