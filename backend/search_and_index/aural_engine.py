@@ -7,7 +7,7 @@ import os
 from backend.search_and_index.sql_database import save_to_db,search_to_json,initialize_db
 import sqlite3
 
-#need to clean up the sql connections.
+
 
 warnings.filterwarnings("ignore")
 
