@@ -127,8 +127,8 @@ def search_to_json(query, output_file="search_results.json"):
                 "text": row["text"]
                 })
         
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=4, ensure_ascii=False)
+
+        return(results)
             
 
 

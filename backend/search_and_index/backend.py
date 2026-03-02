@@ -3,7 +3,7 @@ from fastapi import FastAPI
 import datetime
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
-from search_and_index.database import search_to_json
+from database import search_to_json
 
 class Item(BaseModel):
     query: str
