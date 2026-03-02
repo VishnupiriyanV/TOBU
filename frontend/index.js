@@ -18,5 +18,3 @@ form.onsubmit = function(event){
         //Fail the onsubmit to avoid page refresh.
         return false; 
     }
-
-

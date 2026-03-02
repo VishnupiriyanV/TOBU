@@ -36,3 +36,16 @@ def query(item: Item):
     except sqlite3.OperationalError as e:
         print("Sqlite error:", e)
 
+@app.get("/result")
+def result():
+    try:
+        select_last_query = "SELECT query FROM queries WHERE ROWID IN ( SELECT max( ROWID ) FROM queries );"
+        with sqlite3.connect("backend.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(select_last_query)
+            row = cursor.fetchone()
+            search_query = str(row[0])
+            conn.commit()
+            return search_query
+    except sqlite3.OperationalError as e:
+        print("Sqlite error:", e)
