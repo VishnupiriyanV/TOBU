@@ -1,23 +1,16 @@
 [
     {
         "file-name": "test.mp4",
-        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
-        "start": 272.28,
-        "end": 273.78,
-        "text": "of the pseudocode."
+        "file-path": "/home/winter/Documents/Coding-stuff/TOBU/backend/search_and_index/test.mp4",
+        "start": 52.76,
+        "end": 55.76,
+        "text": "So if you're giving a TED talk, keep it quick."
     },
     {
         "file-name": "test.mp4",
-        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
-        "start": 273.78,
-        "end": 277.72,
-        "text": "Depending on how that pseudocode gets translated into an actual programming language, like C or"
-    },
-    {
-        "file-name": "test.mp4",
-        "file-path": "C:\\Helm\\FossHack\\TOBU\\test.mp4",
-        "start": 250.74,
-        "end": 255.28,
-        "text": "So we wrote that subroutine down in pseudocode, and we gave an analysis of 4M plus 2 on the"
+        "file-path": "/home/winter/Documents/Coding-stuff/TOBU/backend/search_and_index/test.mp4",
+        "start": 45.76,
+        "end": 49.76,
+        "text": "I'm trying to think of the last time I watched an 18-minute TED talk."
     }
 ]

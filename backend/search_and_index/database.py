@@ -43,7 +43,6 @@ def initialize_db():
 
         try:
             cursor.execute(mediaFiles_create_table)
-            connection.commit()
         except Exception as e:
             print(f"media_files error: {e}")
             connection.rollback()

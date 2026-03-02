@@ -7,6 +7,6 @@ query1 = "algorithms"
 
 query2 = "manhattan"
 
-query3 = "pseudocode"
+query3 = "TED"
 
 search_to_json(query3)

@@ -4,7 +4,7 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from database import save_to_db,search_to_json
+from database import save_to_db,search_to_json,initialize_db
 import sqlite3
 
 #need to clean up the sql connections.
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         transcript = transcribe_audio(audio_path)
 
         connection = sqlite3.connect("brain.db")
-
+        initialize_db()
         save_to_db(path,file_name,duration,transcript)
         connection.close()
  
