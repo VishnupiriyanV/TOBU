@@ -11,9 +11,6 @@ form.onsubmit = function(event){
             },
             body: JSON.stringify(Object.fromEntries(formData)),
             })
-            .then(response => response.json())
-            .then(json => console.log(json))
-            .catch(error => console.log('Failed: ' + error.message));
         window.location.replace("search.html");
         //Fail the onsubmit to avoid page refresh.
         return false; 
