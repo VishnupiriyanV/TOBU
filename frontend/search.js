@@ -10,36 +10,57 @@ async function getResult() {
         let element = document.createElement('div');
         element.id = 'result-box'+ i;
         element.className = 'result-box';
+
+        //append result box
         center_div.appendChild(element);
         
         //file path
         let result_box = document.getElementById('result-box' + i)
-        element = document.createElement('div');
-        element.id = 'file-path'+ i;
-        element.className = 'file-path';
-        result_box.appendChild(element);
+        let fp_element = document.createElement('div');
+        fp_element.id = 'file-path'+ i;
+        fp_element.className = 'file-path';
+
+        //append fp div and content
+        result_box.appendChild(fp_element);
         document.getElementById('file-path' + i).innerHTML += box_json["file-path"];
 
         //file name
-        element = document.createElement('div');
-        element.id = 'file-name'+ i;
-        element.className = 'file-name';
-        result_box.appendChild(element);
+        let fn_element = document.createElement('div');
+        fn_element.id = 'file-name'+ i;
+        fn_element.className = 'file-name';
+
+        //append fn div and contents
+        result_box.appendChild(fn_element);
         document.getElementById('file-name' + i).innerHTML += box_json["file-name"];
 
         // timestamp
-        element = document.createElement('div');
-        element.id = 'timestamp'+ i;
-        element.className = 'timestamp';
-        result_box.appendChild(element);
+        let ts_element = document.createElement('div');
+        ts_element.id = 'timestamp'+ i;
+        ts_element.className = 'timestamp';
+        result_box.appendChild(ts_element);
 
         // start and end
         let timestamp = document.getElementById('timestamp' + i)
         // start
-        element.id = 'start'+ i;
-        element.className = 'start time-dec';
-        timestamp.appendChild(element);
+        let start_element = document.createElement('div');
+        start_element.id = 'start'+ i;
+        start_element.className = 'start time-dec';
+        timestamp.appendChild(start_element);
         document.getElementById('start' + i).innerHTML += box_json["start"];
+
+        // end
+        let end_element = document.createElement('div');
+        end_element.id = 'end'+ i;
+        end_element.className = 'end time-dec';
+        timestamp.appendChild(end_element);
+        document.getElementById('end' + i).innerHTML += box_json["end"];
+
+        //result-text
+        let result_element = document.createElement('div');
+        result_element.id = 'result-text'+ i;
+        result_element.className = 'result-text';
+        result_box.appendChild(result_element);
+        document.getElementById('result-text' + i).innerHTML += box_json["text"];
     }
     
 }
