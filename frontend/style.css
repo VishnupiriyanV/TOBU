@@ -57,6 +57,37 @@ a {
     margin-left: 20px;
 }
 
+/* code credit:https://codeymaze.com/pure-css-magic-glowing-rainbow-text-animation/ */
+.rainbow-effect:hover {
+  background: linear-gradient(
+    270deg,
+    #ff0000,
+    #ff9900,
+    #ffff00,
+    #33cc33,
+    #0066ff,
+    #6600cc,
+    #ff3399,
+    #ff0000
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: rainbowMove 5s linear infinite;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+@keyframes rainbowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
 .search-line {
     display: flex;
     align-items: center;
