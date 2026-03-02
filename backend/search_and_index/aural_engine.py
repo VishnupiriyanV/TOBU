@@ -4,7 +4,7 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from backend.search_and_index.sql_database import save_to_db,search_to_json,initialize_db
+from sql_database import save_to_db,search_to_json,initialize_db
 import sqlite3
 
 
