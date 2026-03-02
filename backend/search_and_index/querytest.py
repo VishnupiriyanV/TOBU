@@ -1,6 +1,6 @@
 #for testing the full text search
 
-from database import search_to_json
+from backend.search_and_index.sql_database import search_to_json
 
 
 query1 = "algorithms"
