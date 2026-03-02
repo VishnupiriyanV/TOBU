@@ -102,19 +102,20 @@ footer {
 
 .left-div {
     flex-grow: 1;
-    flex-shrink: 2;
+    flex-shrink: 5;
 }
 .center-div {
     flex-grow: 1;
-    width: 600px;
+    width: 180px;
     background-color: rgb(0, 0, 0);
     color: black;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 .right-div {
     flex-grow: 1;
-    flex-shrink: 2;
+    flex-shrink: 5;
 }
 
 .credit-text-search {
@@ -128,7 +129,7 @@ footer {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .file-path {

@@ -3,7 +3,6 @@ async function getResult() {
     const json = await response.json();
     let size = Object.keys(json).length;
     for (let i = 0; i < size; i++) {
-        console.log(json[i]);
         let box_json = json[i];
         //result-box
         let center_div = document.getElementById('center-div-id')
