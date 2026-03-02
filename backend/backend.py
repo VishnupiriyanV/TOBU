@@ -3,6 +3,7 @@ from fastapi import FastAPI
 import datetime
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
+from search_and_index.database import search_to_json
 
 class Item(BaseModel):
     query: str
@@ -46,6 +47,7 @@ def result():
             row = cursor.fetchone()
             search_query = str(row[0])
             conn.commit()
-            return search_query
+            query_result = search_to_json(search_query)
+            return query_result
     except sqlite3.OperationalError as e:
         print("Sqlite error:", e)
