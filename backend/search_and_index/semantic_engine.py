@@ -22,7 +22,7 @@ def sentence_window(data,window_size=3):
     n=len(chunks)
     
     
-    for text in range(1,n-1):
+    for text in range(1,n):
         starting_index=max(0,text-(window_size//2))
         ending_index=min(n,text+(window_size//2)+1) 
         window_list=chunks[starting_index:ending_index]
@@ -36,13 +36,15 @@ def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vect
     texts_to_embed = [" ".join(window) for window in windowed_text_lists]
 
     #generate the embedding
-    vector_matrix = embed(texts_to_embed)
-    embeddings = vector_matrix.tolist()
+    
+    embeddings = embed(texts_to_embed)
+
+    
 
     #map data
 
     data = []
-    for i in range(len(transcript_data)):
+    for i in range(len(windowed_text_lists)):
         data.append({
             "vector" : embeddings[i],
             "text" : transcript_data[i]["text"],
@@ -75,6 +77,19 @@ def semantic_search(query,limit,db_path="vector_data"):
         
     results = table.search(query_vector).limit(limit).to_list()
 
+    formatted = []
+    for r in results:
+        formatted.append({
+            "file-name": r["file_name"],
+            "file-path": r["file_path"],
+            "start": r["start"],
+            "text": r["text"],
+            "score": round(float(r["_distance"]), 4) # Lower distance is a better match
+        })
+        
+    return formatted
+
+    
 
 
 

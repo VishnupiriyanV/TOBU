@@ -4,3 +4,4 @@
 *.wav
 *.txt
 __pycache__
+vector_data

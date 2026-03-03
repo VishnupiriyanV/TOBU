@@ -4,7 +4,8 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from sql_database import save_to_db,search_to_json,initialize_db,save_to_vectordb
+from sql_database import save_to_db,search_to_json,initialize_db
+from semantic_engine import save_to_vector_db
 import sqlite3
 
 
@@ -63,7 +64,7 @@ def get_duration(path):
 
 if __name__ == "__main__":
     
-    path = "test.mp4"
+    path = "test2.mp4"
     start = time.time()
 
     audio_path = extract_audio(path)
@@ -75,16 +76,23 @@ if __name__ == "__main__":
 
         connection = sqlite3.connect("brain.db")
         initialize_db()
-        save_to_db(path,file_name,duration,transcript)
-        connection.close()
-
-        with sqlite3.connect("brain.db") as conn:
-            cursor = conn.cursor()
+        
+        # Check if file path already exists
+        cursor = connection.cursor()
+        cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (path,))
+        result = cursor.fetchone()
+        
+        if result:
+            media_id = result[0]
+            print(f"File already exists in DB with media_id: {media_id}")
+        else:
+            save_to_db(path, file_name, duration, transcript)
             cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (path,))
             media_id = cursor.fetchone()[0]
-
         
-        save_to_vectordb(media_id, file_name, path, transcript)
+        connection.close()
+
+        save_to_vector_db(media_id, file_name, path, transcript)
         
         
         
