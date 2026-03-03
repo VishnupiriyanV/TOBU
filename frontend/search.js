@@ -1,10 +1,20 @@
-async function getResult() {
-    const response = await fetch('http://127.0.0.1:8000/result');
-    const json = await response.json();
-    let size = Object.keys(json).length;
+function getResult() {
+    const request = new XMLHttpRequest();
+    request.open("GET", "http://127.0.0.1:8000/result", false);
+    request.send(null);
+
+    if (request.status === 200) {
+    let resultObj = JSON.parse(request.responseText);
+    return resultObj;
+    }
+    return null;
+}
+
+function updatePage(fetched) {
+    let size = Object.keys(fetched).length;
     if (size>0) {
     for (let i = 0; i < size; i++) {
-        let box_json = json[i];
+        let box_json = fetched[i];
         //result-box
         let center_div = document.getElementById('center-div-id')
         let element = document.createElement('div');
@@ -86,4 +96,4 @@ function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
-getResult()
+updatePage(getResult());
