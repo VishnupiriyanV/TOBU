@@ -25,10 +25,14 @@ a {
     display: flex;
     justify-content: flex-end;
 }
-.setting-icon-img {
+.setting-icon-img, .history-icon-img {
     height: 24px;
     width: 24px;
-    margin: 24px;
+    margin: 20px;
+}
+
+.history-icon-img {
+    margin-right: 8px;
 }
 
 /* Logo line */

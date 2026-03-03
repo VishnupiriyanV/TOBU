@@ -51,3 +51,16 @@ def result():
             return query_result
     except sqlite3.OperationalError as e:
         print("Sqlite error:", e)
+
+@app.get("/history")
+def history():
+    try:
+        select_last_query = "SELECT * from queries;"
+        with sqlite3.connect("backend.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(select_last_query)
+            row = cursor.fetchall()
+            conn.commit()
+            return row
+    except sqlite3.OperationalError as e:
+        print("Sqlite error:", e)
