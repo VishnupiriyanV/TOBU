@@ -16,28 +16,17 @@ def embed(sentences):
     
 
 
-def sentence_window(data):
+def sentence_window(data,window_size=3):
     final_list=[]
     chunks = [seg["text"] for seg in data]
     n=len(chunks)
-    start_text=list([chunks[0],chunks[1]])
-    end_text=list([chunks[n-2],chunks[n-1]])
-    final_list.append(start_text)
-    if n==1:
-        final_list.append(chunks)
-    elif n==2:
-        final_list.append(start_text)
-    else:
-        for text in range(1,n-1):
-            first_sentence=chunks[text-1]
-            middle_sentence=chunks[text]
-            last_sentence=chunks[text+1]
-            final_window=[first_sentence,middle_sentence,last_sentence]
-            final_list.append(final_window)
-            
-        
-        
-        final_list.append(end_text)
+    
+    
+    for text in range(1,n-1):
+        starting_index=max(0,text-(window_size//2))
+        ending_index=min(n,text+(window_size//2)+1) 
+        window_list=chunks[starting_index:ending_index]
+        final_list.append(window_list)
 
     return final_list
 def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vector_data"):
