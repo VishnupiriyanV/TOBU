@@ -24,9 +24,9 @@ def sentence_window(data):
     end_text=list([chunks[n-2],chunks[n-1]])
     final_list.append(start_text)
     if n==1:
-        final_list.append[chunks]
+        final_list.append(chunks)
     elif n==2:
-        final_list.append[start_text]
+        final_list.append(start_text)
     else:
         for text in range(1,n-1):
             first_sentence=chunks[text-1]
