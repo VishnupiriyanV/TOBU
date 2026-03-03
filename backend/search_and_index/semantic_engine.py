@@ -10,7 +10,25 @@ def embed(sentences):
     return embeddings
 
 
+def sentence_window(data):
+    final_list=[]
+    chunks = [seg["text"] for seg in data]
+    n=len(chunks)
+    start_text=list([chunks[0],chunks[1]])
+    end_text=list([chunks[n-2],chunks[n-1]])
+    final_list.append(start_text)
+    for text in range(1,n-1):
+        first_sentence=chunks[text-1]
+        middle_sentence=chunks[text]
+        last_sentence=chunks[text+1]
+        final_window=[first_sentence,middle_sentence,last_sentence]
+        final_list.append(final_window)
+        
+    
+    
+    final_list.append(end_text)
 
+    return final_list
 
 def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vector_data"):
     
