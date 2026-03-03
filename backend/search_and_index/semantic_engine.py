@@ -30,7 +30,7 @@ def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vect
             "vector" : embeddings[i],
             "text" : transcript_data[i]["text"],
             "context": texts_to_embed[i],
-            "start" : transcript_data[i]["start"]
+            "start" : transcript_data[i]["start"],
             "file_name": file_name,
             "file_path":file_path,
             "media_id" : media_id
@@ -47,6 +47,16 @@ def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vect
         table.add(data)
     else:
         db.create_table(table_name,data=data)
+
+
+def semantic_search(query,limit,db_path="vector_data"):
+    db = lancedb.connect(db_path)
+    table = db.open_table("semantic_segments")
+    
+    
+    query_vector = embed([query])[0].tolist()    
+    results = table.search(query_vector).limit(limit).to_list()
+
 
 
 

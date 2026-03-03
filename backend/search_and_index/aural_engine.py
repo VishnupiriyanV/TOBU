@@ -4,7 +4,7 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from sql_database import save_to_db,search_to_json,initialize_db
+from sql_database import save_to_db,search_to_json,initialize_db,save_to_vectordb
 import sqlite3
 
 
@@ -77,6 +77,17 @@ if __name__ == "__main__":
         initialize_db()
         save_to_db(path,file_name,duration,transcript)
         connection.close()
+
+        with sqlite3.connect("brain.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (path,))
+            media_id = cursor.fetchone()[0]
+
+        
+        save_to_vectordb(media_id, file_name, path, transcript)
+        
+        
+        
  
 
 
