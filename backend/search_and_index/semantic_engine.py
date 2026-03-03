@@ -2,12 +2,18 @@
 from sentence_transformers import SentenceTransformer
 import lancedb
 
+MODEL = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
 #converts text to embedding
 def embed(sentences):
-    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    embeddings = model.encode(sentences)
-    return embeddings
+    
+    embeddings = MODEL.encode(sentences)
+
+    if len(embeddings.shape) == 1:
+        return embeddings.tolist()
+
+    return embeddings.tolist()
+    
 
 
 def sentence_window(data):
@@ -60,7 +66,7 @@ def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vect
     db = lancedb.connect(db_path)
     table_name = "semantic_segments"
 
-    if table_name in db.table_name():
+    if table_name in db.table_names():
         table = db.open_table(table_name)
         table.add(data)
     else:
@@ -72,7 +78,8 @@ def semantic_search(query,limit,db_path="vector_data"):
     table = db.open_table("semantic_segments")
     
     
-    query_vector = embed([query])[0].tolist()    
+    query_vector = embed([query])[0]
+        
     results = table.search(query_vector).limit(limit).to_list()
 
 
