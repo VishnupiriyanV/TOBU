@@ -176,6 +176,9 @@ footer {
     color: rgb(120, 120, 255);
 }
 
+.file-name:hover {
+    text-decoration: underline;
+}
 
 .timestamp {
     display: flex;
