@@ -1,6 +1,9 @@
 
 from sentence_transformers import SentenceTransformer
 import lancedb
+import json
+import pandas as pd
+
 
 MODEL = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
@@ -75,19 +78,15 @@ def semantic_search(query,limit,db_path="vector_data"):
     
     query_vector = embed([query])[0]
         
-    results = table.search(query_vector).limit(limit).to_list()
+    results = table.search(query_vector).limit(limit).to_pandas()
 
-    formatted = []
-    for r in results:
-        formatted.append({
-            "file-name": r["file_name"],
-            "file-path": r["file_path"],
-            "start": r["start"],
-            "text": r["text"],
-            "score": round(float(r["_distance"]), 4) # Lower distance is a better match
-        })
-        
-    return formatted
+    columns_to_keep = ["file_name", "file_path", "start", "text", "_distance"]
+    df = df[columns_to_keep]
+    
+
+    json_output = df.to_json(orient="records", indent=4)
+    
+    return json_output
 
     
 
