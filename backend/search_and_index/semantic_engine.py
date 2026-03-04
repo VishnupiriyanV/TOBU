@@ -71,21 +71,19 @@ def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vect
         db.create_table(table_name,data=data)
 
 
-def semantic_search(query,limit,db_path="vector_data"):
+def semantic_search(query, limit, db_path="vector_data"):
     db = lancedb.connect(db_path)
     table = db.open_table("semantic_segments")
-    
-    
+
     query_vector = embed([query])[0]
-        
+
     results = table.search(query_vector).limit(limit).to_pandas()
 
     columns_to_keep = ["file_name", "file_path", "start", "text", "_distance"]
-    df = df[columns_to_keep]
-    
+    results = results[columns_to_keep]
 
-    json_output = df.to_json(orient="records", indent=4)
-    
+    json_output = results.to_json(orient="records", indent=4)
+
     return json_output
 
     
@@ -93,7 +91,7 @@ def save_summary_vector(media_id,file_name,summary,db_path = "vector_data"):
     db = lancedb.connect(db_path)
     table_name = "summary_segments"
 
-    embedding = embed([summary][0])
+    embedding = embed([summary])
 
     data = [{
         "vector": embedding,

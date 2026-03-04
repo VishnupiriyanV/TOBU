@@ -7,7 +7,6 @@ DATABASE_PATH = "brain.db"
 #create table
 
 def initialize_db():
-
     with sqlite3.connect(DATABASE_PATH) as connection:
         mediaFiles_create_table = """
 
@@ -48,6 +47,15 @@ def initialize_db():
             print(f"media_files error: {e}")
             connection.rollback()
 
+        # Add summary column if it doesn't exist (migration)
+        try:
+            cursor.execute("ALTER TABLE media_files ADD COLUMN summary TEXT")
+            connection.commit()
+            print("Added 'summary' column to media_files table")
+        except Exception as e:
+            # Column already exists, ignore error
+            pass
+
 
 
         try:
@@ -60,23 +68,31 @@ def initialize_db():
 
 #initialize_db()
 
+def get_media_id(file_path):
+    """Get media_id for an existing file path."""
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (file_path,))
+        result = cursor.fetchone()
+        return result[0] if result else None
+
+
 #FOR SAVING TRANSCRIPT
-def save_to_db(file_path,file_name,duration,transcript_data,summary=None):
+def save_to_db(file_path, file_name, duration, transcript_data, summary=None):
     connection = sqlite3.connect("brain.db")
     cursor = connection.cursor()
 
     try:
-
         insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,status,summary) VALUES (?,?,?,'indexed',?)"""
-        cursor.execute(insert_cmd,(file_path,file_name,duration,summary))
+        cursor.execute(insert_cmd, (file_path, file_name, duration, summary))
 
         media_id = cursor.lastrowid
 
         data_to_insert = [
-            (media_id, seg['start'], seg['end'], seg['text'], file_name) 
+            (media_id, seg['start'], seg['end'], seg['text'], file_name)
             for seg in transcript_data
         ]
-        
+
         cursor.executemany("""
             INSERT INTO transcripts_fts (media_id, start_time, end_time, content, file_name)
             VALUES (?, ?, ?, ?, ?)
@@ -85,11 +101,15 @@ def save_to_db(file_path,file_name,duration,transcript_data,summary=None):
         connection.commit()
         print(f"indexed: {file_name}")
 
+        return media_id
+
     except Exception as e:
         print(f"Database Error:{e}")
         connection.rollback()
+        return None
 
-    connection.close()
+    finally:
+        connection.close()
 
 
 #for final json
