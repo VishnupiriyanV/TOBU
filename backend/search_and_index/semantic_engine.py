@@ -89,8 +89,33 @@ def semantic_search(query,limit,db_path="vector_data"):
     return json_output
 
     
+def save_summary_vector(media_id,file_name,summary,db_path = "vector_data"):
+    db = lancedb.connect(db_path)
+    table_name = "summary_segments"
 
+    embedding = embed([summary][0])
 
+    data = [{
+        "vector": embedding,
+        "summary": summary,
+        "file_name": file_name,
+        "media_id": media_id
+    }]
+
+    if table_name in db.table_names():
+        db.open_table(table_name).add(data)
+    else:
+        db.create_table(table_name, data=data)
+
+def file_search(query,limit=5,db_path="vector_data"):
+    db = lancedb.connect(db_path)
+    table = db.open_table("summary_segments")
+    
+    query_vector = embed([query])[0]
+
+    results = table.search(query_vector).limit(limit).to_pandas()
+
+    return results.to_json(orient="records",indent=4)
 
     
 
