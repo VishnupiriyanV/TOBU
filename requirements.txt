@@ -1,0 +1,31 @@
+fastapi>=0.115.0
+pydantic>=2.0.0
+starlette>=0.41.0
+
+uvicorn[standard]>=0.30.0
+
+ffmpeg-python>=0.2.0
+
+faster-whisper>=1.0.0
+ctranslate2>=4.0.0
+
+# CUDA Support for GPU acceleration 
+# Uncomment if using GPU with CUDA 12:
+# nvidia-cublas-cu12>=12.1.0
+# nvidia-cudnn-cu12>=9.0.0
+
+sentence-transformers>=3.0.0
+
+lancedb>=0.10.0
+pandas>=2.0.0
+pyarrow>=15.0.0
+
+transformers>=4.40.0
+torch>=2.3.0
+tokenizers>=0.19.0
+
+accelerate>=0.30.0
+sentencepiece>=0.2.0
+protobuf>=4.0.0
+
+numpy>=1.26.0

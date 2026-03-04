@@ -2,6 +2,5 @@
 *.db
 *.mp4
 *.wav
-*.txt
 __pycache__
 vector_data
