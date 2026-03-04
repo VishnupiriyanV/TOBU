@@ -53,6 +53,7 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
             "text" : transcript_data[i]["text"],
             "context": texts_to_embed[i],
             "start" : transcript_data[i]["start"],
+            "end":transcript_data[i]["end"],
             "file_name": file_name,
             "file_path":file_path,
             "media_id" : media_id
@@ -83,12 +84,18 @@ def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
 
     results = table.search(query_vector).limit(limit).to_pandas()
 
-    columns_to_keep = ["file_name", "file_path", "start", "text", "_distance"]
-    results = results[columns_to_keep]
-
-    json_output = results.to_json(orient="records", indent=4)
-
-    return json_output
+    formatted_results = []
+    for _, r in results.iterrows():
+        formatted_results.append({
+            "file-name": r["file_name"],
+            "file-path": r["file_path"],
+            "start": r["start"],
+            "end": r.get("end", r["start"]), 
+            "text": r["text"],
+            "score": r["_distance"] 
+        })
+        
+    return formatted_results
 
     
 def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):

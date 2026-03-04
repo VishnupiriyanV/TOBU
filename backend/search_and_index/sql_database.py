@@ -128,7 +128,8 @@ def search_to_json(query, output_file="search_results.json"):
                 f.file_path, 
                 t.start_time, 
                 t.end_time, 
-                t.content as text
+                t.content as text,
+                t.rank as score
             FROM transcripts_fts t
             JOIN media_files f ON t.media_id = f.id
             WHERE t.content MATCH ? 
@@ -147,11 +148,12 @@ def search_to_json(query, output_file="search_results.json"):
                 "file-path": os.path.abspath(row["file_path"]), 
                 "start": row["start_time"],
                 "end": row["end_time"],
-                "text": row["text"]
+                "text": row["text"],
+                "score": row["score"]
                 })
         
 
-        return(results)
+        return results
             
 
 
