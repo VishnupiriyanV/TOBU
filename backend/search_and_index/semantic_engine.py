@@ -25,14 +25,14 @@ def sentence_window(data,window_size=3):
     n=len(chunks)
     
     
-    for text in range(1,n):
+    for text in range(0,n):
         starting_index=max(0,text-(window_size//2))
         ending_index=min(n,text+(window_size//2)+1) 
         window_list=chunks[starting_index:ending_index]
         final_list.append(window_list)
 
     return final_list
-def save_to_vector_db(media_id,file_name,file_path,transcript_data,db_path="vector_data"):
+def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=None, db_path="vector_data"):
     
     windowed_text_lists = sentence_window(transcript_data)
 

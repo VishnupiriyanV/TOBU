@@ -79,7 +79,7 @@ def get_media_id(file_path):
 
 #FOR SAVING TRANSCRIPT
 def save_to_db(file_path, file_name, duration, transcript_data, summary=None):
-    connection = sqlite3.connect("brain.db")
+    connection = sqlite3.connect(DATABASE_PATH)
     cursor = connection.cursor()
 
     try:

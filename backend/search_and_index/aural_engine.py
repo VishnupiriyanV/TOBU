@@ -8,6 +8,7 @@ from sql_database import save_to_db, search_to_json, initialize_db
 from semantic_engine import save_to_vector_db, save_summary_vector
 import sqlite3
 from summarizer import summary_generator
+import uuid
 
 
 
@@ -17,6 +18,9 @@ warnings.filterwarnings("ignore")
 
 def extract_audio(input_path, output_path="temp.wav"):
     """converts to 16kHz mono WAV."""
+
+    if output_path is None:
+        output_path = f"backend/search_and_index/tempfiletemp_{uuid.uuid4().hex}.wav"
     try:
         (
             ffmpeg
