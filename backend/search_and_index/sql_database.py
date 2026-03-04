@@ -136,8 +136,8 @@ def search_to_json(query, output_file="search_results.json"):
             LIMIT 50
         """
         
-
-        cursor.execute(search_query, (query,))
+        query1 = f'"{query}"'
+        cursor.execute(search_query, (query1,))
         rows = cursor.fetchall()
         
         results = []

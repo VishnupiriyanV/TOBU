@@ -13,10 +13,6 @@ MODEL = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 def embed(sentences):
     
     embeddings = MODEL.encode(sentences)
-
-    if len(embeddings.shape) == 1:
-        return embeddings.tolist()
-
     return embeddings.tolist()
     
 
@@ -35,6 +31,8 @@ def sentence_window(data,window_size=3):
 
     return final_list
 def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=None, db_path=VECTOR_DB_PATH):
+
+    
     
     windowed_text_lists = sentence_window(transcript_data)
 
@@ -61,6 +59,10 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
         })
 
+    if not data:
+        print(f" No valid segments:{file_name}")
+        return
+    
     # storing the data in lancedb
 
     db = lancedb.connect(db_path)
