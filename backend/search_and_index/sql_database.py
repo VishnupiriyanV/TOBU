@@ -16,6 +16,7 @@ def initialize_db():
         file_path TEXT UNIQUE NOT NULL,
         file_name TEXT NOT NULL,
         duration_seconds REAL,
+        summary TEXT,
         added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         status TEXT DEFAULT 'pending' --pending,processing,indexed,error
 
@@ -60,14 +61,14 @@ def initialize_db():
 #initialize_db()
 
 #FOR SAVING TRANSCRIPT
-def save_to_db(file_path,file_name,duration,transcript_data):
+def save_to_db(file_path,file_name,duration,transcript_data,summary=None):
     connection = sqlite3.connect("brain.db")
     cursor = connection.cursor()
 
     try:
 
-        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,status) VALUES (?,?,?,'indexed')"""
-        cursor.execute(insert_cmd,(file_path,file_name,duration,))
+        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,status,summary) VALUES (?,?,?,'indexed',?)"""
+        cursor.execute(insert_cmd,(file_path,file_name,duration,summary))
 
         media_id = cursor.lastrowid
 
