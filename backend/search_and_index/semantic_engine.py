@@ -3,7 +3,9 @@ from sentence_transformers import SentenceTransformer
 import lancedb
 import json
 import pandas as pd
+import os
 
+VECTOR_DB_PATH = os.path.join("backend", "search_and_index", "database", "vector_data")
 
 MODEL = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
@@ -32,7 +34,7 @@ def sentence_window(data,window_size=3):
         final_list.append(window_list)
 
     return final_list
-def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=None, db_path="vector_data"):
+def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=None, db_path=VECTOR_DB_PATH):
     
     windowed_text_lists = sentence_window(transcript_data)
 
@@ -71,7 +73,7 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
         db.create_table(table_name,data=data)
 
 
-def semantic_search(query, limit, db_path="vector_data"):
+def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
     table = db.open_table("semantic_segments")
 
@@ -87,7 +89,7 @@ def semantic_search(query, limit, db_path="vector_data"):
     return json_output
 
     
-def save_summary_vector(media_id,file_name,summary,db_path = "vector_data"):
+def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
     table_name = "summary_segments"
 
@@ -105,7 +107,7 @@ def save_summary_vector(media_id,file_name,summary,db_path = "vector_data"):
     else:
         db.create_table(table_name, data=data)
 
-def file_search(query,limit=5,db_path="vector_data"):
+def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
     table = db.open_table("summary_segments")
     

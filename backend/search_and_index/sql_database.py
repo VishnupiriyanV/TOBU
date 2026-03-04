@@ -2,7 +2,9 @@ import sqlite3
 import json
 import os
 
-DATABASE_PATH = "brain.db"
+DB_DIR = os.path.join("backend", "search_and_index", "database")
+DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
+os.makedirs(DB_DIR, exist_ok=True)
 
 #create table
 
@@ -47,13 +49,13 @@ def initialize_db():
             print(f"media_files error: {e}")
             connection.rollback()
 
-        # Add summary column if it doesn't exist (migration)
+        
         try:
             cursor.execute("ALTER TABLE media_files ADD COLUMN summary TEXT")
             connection.commit()
             print("Added 'summary' column to media_files table")
         except Exception as e:
-            # Column already exists, ignore error
+            
             pass
 
 
@@ -115,7 +117,7 @@ def save_to_db(file_path, file_name, duration, transcript_data, summary=None):
 #for final json
 
 def search_to_json(query, output_file="search_results.json"):
-    with sqlite3.connect("brain.db") as connection:
+    with sqlite3.connect(DATABASE_PATH) as connection:
         
         connection.row_factory = sqlite3.Row 
         cursor = connection.cursor()

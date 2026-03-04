@@ -1,6 +1,6 @@
 .venv
-*.db
+tempfile
 *.mp4
 *.wav
 __pycache__
-vector_data
+database

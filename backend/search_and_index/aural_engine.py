@@ -4,7 +4,7 @@ import warnings
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import time
 import os
-from sql_database import save_to_db, search_to_json, initialize_db
+from sql_database import save_to_db, search_to_json, initialize_db,DATABASE_PATH
 from semantic_engine import save_to_vector_db, save_summary_vector
 import sqlite3
 from summarizer import summary_generator
@@ -16,11 +16,11 @@ warnings.filterwarnings("ignore")
 
 
 
-def extract_audio(input_path, output_path="temp.wav"):
+def extract_audio(input_path, output_path=None):
     """converts to 16kHz mono WAV."""
 
     if output_path is None:
-        output_path = f"backend/search_and_index/tempfiletemp_{uuid.uuid4().hex}.wav"
+        output_path = f"backend/search_and_index/tempfile/temp_{uuid.uuid4().hex}.wav"
     try:
         (
             ffmpeg
@@ -69,7 +69,7 @@ def get_duration(path):
 
 if __name__ == "__main__":
     
-    path = "backend/search_and_index/test.mp4"
+    path = "test2.mp4"
     start = time.time()
 
     audio_path = extract_audio(path)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         transcript = transcribe_audio(audio_path)
         summary_text = summary_generator(transcript)
 
-        connection = sqlite3.connect("brain.db")
+        connection = sqlite3.connect(DATABASE_PATH)
         initialize_db()
 
         # Check if file path already exists
