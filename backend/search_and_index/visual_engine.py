@@ -23,7 +23,7 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
 
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    interval = int(fps*) #extract one frame per second
+    interval = int(fps*INTERVAL_SECONDS) #extract one frame per second
 
     frames_batch = []
     count =0
@@ -91,6 +91,26 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
 
 
         
+
+def search_video_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
+    db = lancedb.connect(db_path)
+    table_name = "visual_moments"
+    
+    if table_name not in db.table_names():
+        print("Error: Database table not found. Run the indexer first.")
+        return []
+
+    table = db.open_table(table_name)
+
+    
+    query_vector = model.encode(query_text).tolist()
+
+    
+    results = table.search(query_vector) \
+        .limit(limit) \
+        .to_list()
+
+    return results
 
 
 
