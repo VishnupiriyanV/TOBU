@@ -2,6 +2,7 @@ import cv2
 from PIL import Image
 import os
 from semantic_engine import VECTOR_DB_PATH
+import lancedb
 
 
 INTERVAL_SECONDS =2 #frame extraction 
@@ -25,6 +26,9 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
     frames_batch = []
     count =0
     batch_size = BATCH_SIZE
+
+    db = lancedb.connect(VECTOR_DB_PATH)
+    table_name = "visual_moments"
 
     while cap.isOpened():
         ret,frame = cap.read()
@@ -61,7 +65,28 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
 
             })
 
-            
+            # after batch size save database
+            if len(frames_batch)>= batch_size:
+                if table_name in db.table_names():
+                    db.open_table(table_name).add(frames_batch)
+                else:
+                    db.create_table(table_name,data=frames_batch)
+                frames_batch = [] 
+
+        count += 1
+
+        
+    if frames_batch:
+        if table_name in db.table_names():
+            db.open_table(table_name).add(frames_batch)
+        else:
+            db.create_table(table_name, data=frames_batch)
+
+    cap.release() 
+    print(f"Visual indexing  for media_id: {media_id}")
+
+
+        
 
 
 
