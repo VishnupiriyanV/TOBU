@@ -2,7 +2,8 @@ import cv2
 from PIL import Image
 import os
 from semantic_engine import VECTOR_DB_PATH
-
+from sentence_transformers import SentenceTransformer, util
+from PIL import Image
 
 INTERVAL_SECONDS =2 #frame extraction 
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
@@ -47,6 +48,8 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
             pil_img.save(thumb_path,"jpeg",quality=THUMBNAIL_QUALITY )
 
             #placeholder for model embedding
+            model = SentenceTransformer('clip-ViT-B-32')
+            img_embedding = model.encode(pil_img)
 
 
 
