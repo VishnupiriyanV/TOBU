@@ -69,7 +69,7 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
     db = lancedb.connect(db_path)
     table_name = "semantic_segments"
 
-    if table_name in db.table_names():
+    if table_name in db.list_tables():
         table = db.open_table(table_name)
         table.add(data)
     else:
@@ -111,7 +111,7 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
         "media_id": media_id
     }]
 
-    if table_name in db.table_names():
+    if table_name in db.list_tables():
         db.open_table(table_name).add(data)
     else:
         db.create_table(table_name, data=data)

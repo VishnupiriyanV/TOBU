@@ -9,7 +9,7 @@ from semantic_engine import save_to_vector_db, save_summary_vector
 import sqlite3
 from summarizer import summary_generator
 import uuid
-
+from visual_engine import index_video_visually
 
 
 warnings.filterwarnings("ignore")
@@ -21,17 +21,22 @@ def extract_audio(input_path, output_path=None):
 
     if output_path is None:
         output_path = f"backend/search_and_index/tempfile/temp_{uuid.uuid4().hex}.wav"
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     try:
         (
             ffmpeg
             .input(input_path)
             .output(output_path, acodec='pcm_s16le', ac=1, ar='16k')
             .overwrite_output()
-            .run(quiet=True)
+            .run(capture_stdout=True, capture_stderr=True)
         )
         return output_path
     except ffmpeg.Error as e:
-        print(f"Error extracting audio: {e}")
+        stderr_output = e.stderr.decode('utf-8') if e.stderr else "Unknown error"
+        print(f"Error extracting audio: {stderr_output}")
+        print(f"Input file exists: {os.path.exists(input_path)}")
         return None
 
 
@@ -69,7 +74,7 @@ def get_duration(path):
 
 if __name__ == "__main__":
     
-    path = "test2.mp4"
+    path = "C:/Helm/FossHack/TOBU/test3.mp4"
     start = time.time()
 
     audio_path = extract_audio(path)
@@ -84,7 +89,7 @@ if __name__ == "__main__":
         connection = sqlite3.connect(DATABASE_PATH)
         initialize_db()
 
-        # Check if file path already exists
+        
         cursor = connection.cursor()
         cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (path,))
         result = cursor.fetchone()
@@ -103,7 +108,9 @@ if __name__ == "__main__":
 
         save_to_vector_db(media_id, file_name, path, transcript, summary=summary_text)
         save_summary_vector(media_id, file_name, summary_text)
-        
+    
+        print("visual indexing starts:")
+        index_video_visually(path, media_id)
         
         
  

@@ -5,7 +5,8 @@ from semantic_engine import VECTOR_DB_PATH
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 import lancedb
-
+import json
+import torch
 
 INTERVAL_SECONDS =2 #frame extraction 
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
@@ -13,8 +14,10 @@ THUMBNAIL_PATH = os.path.join("backend", "search_and_index", "tempfile", "thumbn
 THUMBNAIL_MAX_SIZE= (320,320)
 THUMBNAIL_QUALITY = 80
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+visual_model = SentenceTransformer('clip-ViT-B-32', device=device)
 
-def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
+def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
     if not os.path.exists(THUMBNAIL_PATH):
         os.makedirs(THUMBNAIL_PATH)
@@ -48,13 +51,13 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
             timestamp = round(count/fps,2)
             thumb_filename = f"{media_id}_{timestamp}.jpg"
             thumb_path = THUMBNAIL_PATH
-
-            pil_img.thumnail(THUMBNAIL_MAX_SIZE)
-            pil_img.save(thumb_path,"jpeg",quality=THUMBNAIL_QUALITY )
+            full_thumb_path = os.path.join(THUMBNAIL_PATH, thumb_filename)
+            pil_img.thumbnail(THUMBNAIL_MAX_SIZE)
+            pil_img.save(full_thumb_path,"jpeg",quality=THUMBNAIL_QUALITY )
 
             #placeholder for model embedding
-            model = SentenceTransformer('clip-ViT-B-32')
-            img_embedding = model.encode(pil_img)
+            
+            img_embedding = visual_model.encode(pil_img)
 
 
 
@@ -65,13 +68,13 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
                 "vector": img_embedding, #change after adding model
                 "timestamp": timestamp,
                 "media_id": media_id,
-                "thumbnail_path" : thumb_path
+                "thumbnail_path" : full_thumb_path
 
             })
 
             # after batch size save database
             if len(frames_batch)>= batch_size:
-                if table_name in db.table_names():
+                if table_name in db.list_tables():
                     db.open_table(table_name).add(frames_batch)
                 else:
                     db.create_table(table_name,data=frames_batch)
@@ -79,42 +82,62 @@ def  index_video_visually(video_path,media_id,db_path=VECTOR_DB_PATH,):
 
         count += 1
 
-        
     if frames_batch:
-        if table_name in db.table_names():
-            db.open_table(table_name).add(frames_batch)
-        else:
-            db.create_table(table_name, data=frames_batch)
+        _upsert_lancedb(db, table_name, frames_batch)
 
-    cap.release() 
-    print(f"Visual indexing  for media_id: {media_id}")
+    cap.release()
+    print(f"Visual indexing : {media_id}")
+
+def _upsert_lancedb(db, table_name, data):
+    
+    
+    try:
+        table = db.open_table(table_name)
+        table.add(data)
+    except Exception:
+        # Table doesn't exist, create it
+        db.create_table(table_name, data=data)
+
+        
+    
+
+    
 
 
         
 
-def search_video_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
+
+
+def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
+
     db = lancedb.connect(db_path)
     table_name = "visual_moments"
-    
-    if table_name not in db.table_names():
-        print("Error: Database table not found. Run the indexer first.")
-        return []
+
+    if table_name not in db.list_tables():
+        return json.dumps({"error": "Table not found"}, indent=2)
 
     table = db.open_table(table_name)
 
-    
-    query_vector = model.encode(query_text).tolist()
+
+    query_vector = visual_model.encode(query_text).tolist()
+
+
+    results = table.search(query_vector).limit(limit).to_list()
+
+
+    for res in results:
+        if "vector" in res:
+            del res["vector"] 
+        
+        res["media_id"] = str(res["media_id"])
 
     
-    results = table.search(query_vector) \
-        .limit(limit) \
-        .to_list()
-
-    return results
+    return json.dumps(results, indent=2, ensure_ascii=False)
 
 
-
-
+# Test code (uncomment to use)
+# json_output = search_visual_moments("umbrella")
+# print(json_output)
 
 
 
