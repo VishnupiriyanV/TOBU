@@ -111,9 +111,10 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
         "media_id": media_id
     }]
 
-    if table_name in db.list_tables():
-        db.open_table(table_name).add(data)
-    else:
+    try:
+        table = db.open_table(table_name)
+        table.add(data)
+    except Exception:
         db.create_table(table_name, data=data)
 
 def file_search(query,limit=5,db_path=VECTOR_DB_PATH):

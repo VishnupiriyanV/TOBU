@@ -39,6 +39,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
         ret,frame = cap.read()
 
         if not ret:
+            
             break
 
         if count % interval == 0:
@@ -65,7 +66,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
 
             frames_batch.append({
-                "vector": img_embedding, #change after adding model
+                "vector": img_embedding,
                 "timestamp": timestamp,
                 "media_id": media_id,
                 "thumbnail_path" : full_thumb_path
@@ -73,12 +74,10 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
             })
 
             # after batch size save database
-            if len(frames_batch)>= batch_size:
-                if table_name in db.list_tables():
-                    db.open_table(table_name).add(frames_batch)
-                else:
-                    db.create_table(table_name,data=frames_batch)
-                frames_batch = [] 
+            if len(frames_batch) >= batch_size:
+                
+                _upsert_lancedb(db, table_name, frames_batch)
+                frames_batch = []
 
         count += 1
 
@@ -89,16 +88,14 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
     print(f"Visual indexing : {media_id}")
 
 def _upsert_lancedb(db, table_name, data):
-    
-    
     try:
         table = db.open_table(table_name)
         table.add(data)
     except Exception:
-        # Table doesn't exist, create it
         db.create_table(table_name, data=data)
 
-        
+
+
     
 
     
@@ -113,10 +110,10 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
     db = lancedb.connect(db_path)
     table_name = "visual_moments"
 
-    if table_name not in db.list_tables():
-        return json.dumps({"error": "Table not found"}, indent=2)
-
-    table = db.open_table(table_name)
+    try:
+        table = db.open_table(table_name)
+    except Exception as e:
+        return json.dumps({"error": "Table not found", "details": str(e)}, indent=2)
 
 
     query_vector = visual_model.encode(query_text).tolist()
@@ -135,9 +132,9 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
     return json.dumps(results, indent=2, ensure_ascii=False)
 
 
-# Test code (uncomment to use)
-# json_output = search_visual_moments("umbrella")
-# print(json_output)
+
+json_output = search_visual_moments("honey")
+print(json_output)
 
 
 
