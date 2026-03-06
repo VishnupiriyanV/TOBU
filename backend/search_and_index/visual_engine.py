@@ -3,10 +3,10 @@ from PIL import Image
 import os
 from semantic_engine import VECTOR_DB_PATH
 from sentence_transformers import SentenceTransformer, util
-from PIL import Image
 import lancedb
 import json
 import torch
+from model_downloader import MODEL_VISUAL_PATH
 
 INTERVAL_SECONDS =2 #frame extraction 
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
@@ -14,8 +14,9 @@ THUMBNAIL_PATH = os.path.join("backend", "search_and_index", "tempfile", "thumbn
 THUMBNAIL_MAX_SIZE= (320,320)
 THUMBNAIL_QUALITY = 80
 
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
-visual_model = SentenceTransformer('clip-ViT-B-32', device=device)
+visual_model = SentenceTransformer(MODEL_VISUAL_PATH, device=device,model_kwargs={"local_files_only":True})
 
 def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
@@ -132,8 +133,8 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
     return json.dumps(results, indent=2, ensure_ascii=False)
 
 
-#json_output = search_visual_moments("water pouring in a cup")
-#print(json_output)
+json_output = search_visual_moments("water pouring in a cup")
+print(json_output)
 
 
 

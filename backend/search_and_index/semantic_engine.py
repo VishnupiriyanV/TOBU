@@ -4,10 +4,12 @@ import lancedb
 import json
 import pandas as pd
 import os
+from model_downloader import MODEL_SEMANTIC_PATH
 
 VECTOR_DB_PATH = os.path.join("backend", "search_and_index", "database", "vector_data")
 
-MODEL = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+MODEL = SentenceTransformer(MODEL_SEMANTIC_PATH,model_kwargs={"local_files_only":True})
+
 
 #converts text to embedding
 def embed(sentences):

@@ -4,3 +4,4 @@ tempfile
 *.wav
 __pycache__
 database
+models
