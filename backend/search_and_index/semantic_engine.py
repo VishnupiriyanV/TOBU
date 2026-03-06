@@ -8,7 +8,11 @@ from model_downloader import MODEL_SEMANTIC_PATH
 
 VECTOR_DB_PATH = os.path.join("backend", "search_and_index", "database", "vector_data")
 
-MODEL = SentenceTransformer(MODEL_SEMANTIC_PATH,model_kwargs={"local_files_only":True})
+# Load model in offline mode
+MODEL = SentenceTransformer(
+    MODEL_SEMANTIC_PATH,
+    model_kwargs={"local_files_only": True}
+)
 
 
 #converts text to embedding

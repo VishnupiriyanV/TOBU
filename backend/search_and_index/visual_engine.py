@@ -133,10 +133,6 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
     return json.dumps(results, indent=2, ensure_ascii=False)
 
 
-json_output = search_visual_moments("water pouring in a cup")
-print(json_output)
-
-
 
 
             

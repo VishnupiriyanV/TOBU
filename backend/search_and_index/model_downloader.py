@@ -8,15 +8,22 @@ import os
 SEMANTIC_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 VISUAL_MODEL = "clip-ViT-B-32"
 
-MODEL_VISUAL_PATH = os.path.join("backend","models","clip-ViT-B-32")
-MODEL_SEMANTIC_PATH = os.path.join("backend","models","all-MiniLM-L6-v2")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "..", "models")
+os.makedirs(MODEL_DIR, exist_ok=True)
 
-model_dir = os.path.join("backend", "search_and_index", "models")
-os.makedirs(model_dir, exist_ok=True)
+MODEL_VISUAL_PATH = os.path.join(MODEL_DIR, "clip-ViT-B-32")
+MODEL_SEMANTIC_PATH = os.path.join(MODEL_DIR, "all-MiniLM-L6-v2")
 
-model_semantic = SentenceTransformer(SEMANTIC_MODEL)
-model_semantic.save(MODEL_SEMANTIC_PATH)
+if not os.path.exists(MODEL_SEMANTIC_PATH):
+    model_semantic = SentenceTransformer(SEMANTIC_MODEL)
+    model_semantic.save(MODEL_SEMANTIC_PATH)
+else:
+    print(f"Semantic model already exists at: {MODEL_SEMANTIC_PATH}")
 
-model_visual = SentenceTransformer(VISUAL_MODEL)
-model_visual.save(MODEL_VISUAL_PATH)
+if not os.path.exists(MODEL_VISUAL_PATH):
+    model_visual = SentenceTransformer(VISUAL_MODEL)
+    model_visual.save(MODEL_VISUAL_PATH)
+else:
+    print(f"Visual model already exists at: {MODEL_VISUAL_PATH}")
 
