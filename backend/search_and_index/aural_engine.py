@@ -40,7 +40,12 @@ def extract_audio(input_path, output_path=None):
         return None
 
 
-def transcribe_audio(input_path, output_path="transcript.json"):
+def transcribe_audio(input_path, output_path=None):
+    if output_path is None:
+        output_path = os.path.join("backend", "search_and_index", "tempfile", "transcript.json")
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     model = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
 
     segments, info = model.transcribe(input_path, beam_size=5,vad_filter=True)
