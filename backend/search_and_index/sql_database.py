@@ -2,9 +2,8 @@ import sqlite3
 import json
 import os
 
-DB_DIR = os.path.join("backend", "search_and_index", "database")
-DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
-os.makedirs(DB_DIR, exist_ok=True)
+
+DATABASE_PATH = "brain.db"
 
 #create table
 
