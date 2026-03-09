@@ -6,3 +6,5 @@ __pycache__
 data
 models
 *.pdf
+*.okdokey
+*.db
