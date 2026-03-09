@@ -8,8 +8,7 @@ import os
 SEMANTIC_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 VISUAL_MODEL = "clip-ViT-B-32"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "..", "models")
+MODEL_DIR = os.path.join("models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_VISUAL_PATH = os.path.join(MODEL_DIR, "clip-ViT-B-32")
