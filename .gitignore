@@ -5,3 +5,4 @@ tempfile
 __pycache__
 database
 models
+*.pdf
