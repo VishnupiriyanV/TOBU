@@ -3,6 +3,6 @@ tempfile
 *.mp4
 *.wav
 __pycache__
-database
+data
 models
 *.pdf

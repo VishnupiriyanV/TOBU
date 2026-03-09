@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 
-DB_DIR = os.path.join("backend", "search_and_index", "database")
+DB_DIR = os.path.join("data","database")
 DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
 os.makedirs(DB_DIR, exist_ok=True)
 
@@ -66,7 +66,6 @@ def initialize_db():
         except Exception as e:
             print(f"transcripts_fts error: {e}")
             connection.rollback()
-
 
 #initialize_db()
 

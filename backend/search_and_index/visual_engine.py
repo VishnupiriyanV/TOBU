@@ -10,7 +10,7 @@ from model_downloader import MODEL_VISUAL_PATH
 
 INTERVAL_SECONDS =2 #frame extraction 
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
-THUMBNAIL_PATH = os.path.join("backend", "search_and_index", "tempfile", "thumbnails")
+THUMBNAIL_PATH = os.path.join("data", "thumbnails")
 THUMBNAIL_MAX_SIZE= (320,320)
 THUMBNAIL_QUALITY = 80
 
@@ -131,7 +131,6 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
 
     
     return json.dumps(results, indent=2, ensure_ascii=False)
-
 
 
 
