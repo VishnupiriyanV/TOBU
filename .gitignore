@@ -6,5 +6,5 @@ __pycache__
 database
 models
 *.pdf
-*.txt
+*.okdokey
 *.db
