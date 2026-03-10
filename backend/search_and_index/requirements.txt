@@ -31,3 +31,4 @@ protobuf>=4.0.0
 numpy>=1.26.0
 
 pillow>=12.1.1
+opencv-python-headless>=4.10.0
