@@ -5,6 +5,7 @@ import os
 import uuid
 
 
+WHISPER_MODEL = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
 
 
 
@@ -38,9 +39,9 @@ def transcribe_audio(input_path, output_path=None):
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    model = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
+    
 
-    segments, info = model.transcribe(input_path, beam_size=5,vad_filter=True)
+    segments, info = WHISPER_MODEL.transcribe(input_path, beam_size=5,vad_filter=True)
     
     transcript = []
     for segment in segments:

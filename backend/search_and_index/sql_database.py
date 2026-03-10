@@ -50,13 +50,7 @@ def initialize_db():
             connection.rollback()
 
         
-        try:
-            cursor.execute("ALTER TABLE media_files ADD COLUMN summary TEXT")
-            connection.commit()
-            print("Added 'summary' column to media_files table")
-        except Exception as e:
-            
-            pass
+
 
 
 

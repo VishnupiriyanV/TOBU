@@ -21,6 +21,3 @@ def process_pdf(file):
     
     return content
 
-
-pdf = process_pdf("test.pdf")
-print(pdf)

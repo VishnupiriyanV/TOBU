@@ -121,6 +121,7 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
         table = db.open_table(table_name)
         table.add(data)
     except Exception:
+        db.drop_table(table_name, ignore_missing=True)
         db.create_table(table_name, data=data)
 
 def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
