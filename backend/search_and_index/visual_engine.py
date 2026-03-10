@@ -36,6 +36,11 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
     db = lancedb.connect(VECTOR_DB_PATH)
     table_name = "visual_moments"
 
+    if table_name in db.table_names():
+        table = db.open_table(table_name)
+    else:
+        table = None
+
     while cap.isOpened():
         ret,frame = cap.read()
 
@@ -76,24 +81,24 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
             # after batch size save database
             if len(frames_batch) >= batch_size:
-                
-                _upsert_lancedb(db, table_name, frames_batch)
+                if table is None:
+                    table = db.create_table(table_name, data=frames_batch)
+                else:
+                    table.add(frames_batch)
                 frames_batch = []
 
         count += 1
 
     if frames_batch:
-        _upsert_lancedb(db, table_name, frames_batch)
+        if table is None:
+            table = db.create_table(table_name, data=frames_batch)
+        else:
+            table.add(frames_batch)
 
     cap.release()
     print(f"Visual indexing : {media_id}")
 
-def _upsert_lancedb(db, table_name, data):
-    try:
-        table = db.open_table(table_name)
-        table.add(data)
-    except Exception:
-        db.create_table(table_name, data=data)
+
 
 
 
