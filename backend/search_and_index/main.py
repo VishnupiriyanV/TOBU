@@ -6,6 +6,7 @@ from summarizer import summary_generator
 from visual_engine import index_video_visually
 import warnings
 import time
+import os
 
 warnings.filterwarnings("ignore")
 
@@ -25,6 +26,7 @@ if __name__ == "__main__":
 
     if audio_path:
         transcript = transcribe_audio(audio_path)
+        os.remove(audio_path)
         summary_text = summary_generator(transcript)
 
         connection = sqlite3.connect(DATABASE_PATH)
