@@ -57,7 +57,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
             pil_img.thumbnail(THUMBNAIL_MAX_SIZE)
             pil_img.save(full_thumb_path,"jpeg",quality=THUMBNAIL_QUALITY )
 
-            #placeholder for model embedding
+            
             
             img_embedding = visual_model.encode(pil_img)
 
