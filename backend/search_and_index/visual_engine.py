@@ -57,7 +57,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
             timestamp = round(count/fps,2)
             thumb_filename = f"{media_id}_{timestamp}.jpg"
-            thumb_path = THUMBNAIL_PATH
+            
             full_thumb_path = os.path.join(THUMBNAIL_PATH, thumb_filename)
             pil_img.thumbnail(THUMBNAIL_MAX_SIZE)
             pil_img.save(full_thumb_path,"jpeg",quality=THUMBNAIL_QUALITY )
