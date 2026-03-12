@@ -18,7 +18,8 @@ def process_media(path):
     initialize_db()
     ext = os.path.splitext(path)[1].lower()
 
-    if not should_process(path):
+    should_index, current_hash = should_process(path)
+    if not should_index:
         print(f"Already indexed do Skipped : {path}")
         return
 
@@ -31,7 +32,7 @@ def process_media(path):
             os.remove(audio_path)
             summary_text = summary_generator(transcript)
             
-            media_id = save_to_db(path, file_name, duration, transcript, summary=summary_text)
+            media_id = save_to_db(path, file_name, duration, transcript, summary=summary_text, current_hash=current_hash)
             if media_id:
                 save_to_vector_db(media_id, file_name, path, transcript, summary=summary_text)
                 save_summary_vector(media_id, file_name, summary_text)
