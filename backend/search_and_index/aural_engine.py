@@ -3,9 +3,17 @@ import json
 from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import os
 import uuid
+import torch
 
 
-WHISPER_MODEL = WhisperModel("distil-large-v3", device="cuda", compute_type="int8")
+if torch.cuda.is_available():
+    device = "cuda"
+    compute = "int8"
+else:
+    device = "cpu"
+    compute = "int8"
+
+WHISPER_MODEL = WhisperModel("distil-large-v3", device=device, compute_type=compute)
 
 
 
