@@ -1,9 +1,18 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+import os
 
-model_name = "sshleifer/distilbart-cnn-6-6"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+MODEL_NAME = "sshleifer/distilbart-cnn-6-6"
+MODEL_PATH = os.path.join("models", "distilbart-cnn-6-6")
+
+if os.path.exists(MODEL_PATH):
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
+else:
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+    tokenizer.save_pretrained(MODEL_PATH)
+    model.save_pretrained(MODEL_PATH)
 
 def summary_generator(data):
     if isinstance(data, str):
