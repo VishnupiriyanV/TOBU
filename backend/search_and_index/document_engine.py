@@ -23,7 +23,7 @@ def process_pdf(file):
     summary_text = summary_generator(content)
     return summary_text
 
-import os
+
 
 def process_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()

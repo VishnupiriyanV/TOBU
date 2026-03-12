@@ -120,8 +120,8 @@ def search_to_json(query, output_file="search_results.json"):
             SELECT 
                 f.file_name, 
                 f.file_path, 
-                t.start_time, 
-                t.end_time, 
+                t.location_start, 
+                t.location_end, 
                 t.content as text,
                 t.rank as score
             FROM transcripts_fts t
@@ -140,8 +140,8 @@ def search_to_json(query, output_file="search_results.json"):
             results.append({
                 "file-name": row["file_name"],
                 "file-path": os.path.abspath(row["file_path"]), 
-                "start": row["start_time"],
-                "end": row["end_time"],
+                "start": row["location_start"],
+                "end": row["location_end"],
                 "text": row["text"],
                 "score": row["score"]
                 })
