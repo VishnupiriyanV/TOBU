@@ -101,16 +101,6 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
 
 
-
-    
-
-    
-
-
-        
-
-
-
 def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
 
     db = lancedb.connect(db_path)
@@ -118,8 +108,8 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
 
     try:
         table = db.open_table(table_name)
-    except Exception as e:
-        return json.dumps({"error": "Table not found", "details": str(e)}, indent=2)
+    except Exception:
+        return []
 
 
     query_vector = visual_model.encode(query_text).tolist()
@@ -135,7 +125,7 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
         res["media_id"] = str(res["media_id"])
 
     
-    return json.dumps(results, indent=2, ensure_ascii=False)
+    return results
 
 
 
