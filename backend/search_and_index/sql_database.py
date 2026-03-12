@@ -16,7 +16,8 @@ def initialize_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         file_path TEXT UNIQUE NOT NULL,
         file_name TEXT NOT NULL,
-        duration_seconds REAL,
+        source_type TEXT DEFAULT 'video',  --'video','pdf','markdown','txt'
+        duration_seconds REAL, -- NULL for non media
         summary TEXT,
         added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         status TEXT DEFAULT 'pending' --pending,processing,indexed,error
@@ -31,8 +32,8 @@ def initialize_db():
 
         CREATE VIRTUAL TABLE IF NOT EXISTS transcripts_fts USING fts5(
             media_id UNINDEXED ,
-            start_time UNINDEXED,
-            end_time UNINDEXED,
+            location_start UNINDEXED,
+            location_end UNINDEXED,
             content,
             file_name
             );
