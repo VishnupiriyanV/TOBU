@@ -151,5 +151,6 @@ def search_to_json(query, output_file="search_results.json"):
             
 
 
-
+def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None):
+    return save_to_db(file_path, file_name, duration=None, transcript_data=segments, source_type=source_type, summary=summary)
 
