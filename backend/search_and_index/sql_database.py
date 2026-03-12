@@ -74,23 +74,23 @@ def get_media_id(file_path):
 
 
 #FOR SAVING TRANSCRIPT
-def save_to_db(file_path, file_name, duration, transcript_data, summary=None):
+def save_to_db(file_path, file_name, duration, transcript_data,source_type="video", summary=None):
     connection = sqlite3.connect(DATABASE_PATH)
     cursor = connection.cursor()
 
     try:
-        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,status,summary) VALUES (?,?,?,'indexed',?)"""
-        cursor.execute(insert_cmd, (file_path, file_name, duration, summary))
+        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,source_type,status,summary) VALUES (?,?,?,?,'indexed',?)"""
+        cursor.execute(insert_cmd, (file_path, file_name, duration,source_type, summary))
 
         media_id = cursor.lastrowid
 
         data_to_insert = [
-            (media_id, seg['start'], seg['end'], seg['text'], file_name)
+            (media_id, seg.get('start') or seg.get('page'), seg.get('end') or seg.get('page'), seg['text'], file_name)
             for seg in transcript_data
         ]
 
         cursor.executemany("""
-            INSERT INTO transcripts_fts (media_id, start_time, end_time, content, file_name)
+            INSERT INTO transcripts_fts (media_id, location_start, location_end, content, file_name)
             VALUES (?, ?, ?, ?, ?)
         """, data_to_insert)
 
