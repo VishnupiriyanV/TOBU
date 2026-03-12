@@ -1,25 +1,17 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
-import os
+from model_downloader import MODEL_SUMMARIZER_PATH
 
-MODEL_NAME = "sshleifer/distilbart-cnn-6-6"
-MODEL_PATH = os.path.join("models", "distilbart-cnn-6-6")
 
-if os.path.exists(MODEL_PATH):
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH)
-else:
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
-    tokenizer.save_pretrained(MODEL_PATH)
-    model.save_pretrained(MODEL_PATH)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_SUMMARIZER_PATH)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_SUMMARIZER_PATH)
 
 def summary_generator(data):
     if isinstance(data, str):
         chunks = data
     else:
         chunks =" ".join([seg["text"] for seg in data])
-    tokens = tokenizer.encode(chunks)
+    tokens = tokenizer.encode(chunks,add_special_tokens=False)
     max_tokens = 1024
     final_chunks = []
     for i in range(0, len(tokens), max_tokens):

@@ -120,11 +120,10 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
         "media_id": media_id
     }]
 
-    try:
+    if table_name in db.table_names():
         table = db.open_table(table_name)
         table.add(data)
-    except Exception:
-        db.drop_table(table_name, ignore_missing=True)
+    else:
         db.create_table(table_name, data=data)
 
 def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
@@ -135,7 +134,7 @@ def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
 
     results = table.search(query_vector).limit(limit).to_pandas()
 
-    return results.to_json(orient="records",indent=4)
+    return results.to_dict(orient="records")
 
     
 
