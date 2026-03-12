@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import hashlib
 
 DB_DIR = os.path.join("data","database")
 DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
@@ -20,7 +21,8 @@ def initialize_db():
         duration_seconds REAL, -- NULL for non media
         summary TEXT,
         added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        status TEXT DEFAULT 'pending' --pending,processing,indexed,error
+        status TEXT DEFAULT 'pending', --pending,processing,indexed,error
+        file_hash TEXT
 
 
         )
@@ -69,8 +71,9 @@ def save_to_db(file_path, file_name, duration, transcript_data,source_type="vide
     cursor = connection.cursor()
 
     try:
-        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,source_type,status,summary) VALUES (?,?,?,?,'indexed',?)"""
-        cursor.execute(insert_cmd, (file_path, file_name, duration,source_type, summary))
+        current_hash = compute_file_hash(file_path)
+        insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,source_type,status,summary,file_hash) VALUES (?,?,?,?,'indexed',?,?)"""
+        cursor.execute(insert_cmd, (file_path, file_name, duration,source_type, summary,current_hash))
 
         media_id = cursor.lastrowid
 
@@ -138,8 +141,28 @@ def search_to_json(query, output_file="search_results.json"):
         
 
         return results
-            
+    
+def compute_file_hash(path,chunk_size=8192): #8kb
+    h = hashlib.sha256()
+    with open(path,"rb") as f:
+        chunk = f.read(chunk_size)
+        while chunk:
+            h.update(chunk)
+            chunk = f.read(chunk_size)
+    return h.hexdigest()
 
+
+#return true if the file already indexed
+def should_process(file_path):
+    current_hash = compute_file_hash(file_path)
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        row = connection.execute(
+            "SELECT file_hash FROM media_files WHERE file_path = ?", (file_path,)
+        ).fetchone()
+
+    if row is None:
+        return True 
+    return row[0] != current_hash
 
 def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None):
     return save_to_db(file_path, file_name, None, segments, source_type=source_type, summary=summary)

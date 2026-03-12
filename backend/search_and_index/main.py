@@ -1,5 +1,5 @@
 from aural_engine import extract_audio,get_duration,get_file_name,transcribe_audio
-from sql_database import save_to_db, search_to_json, initialize_db,DATABASE_PATH
+from sql_database import save_to_db, search_to_json, initialize_db,DATABASE_PATH,should_process
 from semantic_engine import save_to_vector_db, save_summary_vector
 from document_engine import process_pdf, process_file
 import sqlite3
@@ -16,6 +16,10 @@ warnings.filterwarnings("ignore")
 
 def process_media(path):
     ext = os.path.splitext(path)[1].lower()
+
+    if not should_process(path):
+        print(f"Already indexed do Skipped : {path}")
+        return
 
     if ext in (".mp4", ".mkv", ".avi", ".mov", ".webm"):
         audio_path = extract_audio(path)
