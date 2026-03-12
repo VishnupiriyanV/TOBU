@@ -2,17 +2,20 @@
 #to pre-download the models
 
 from sentence_transformers import SentenceTransformer
-from faster_whisper import WhisperModel
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import os
 
 SEMANTIC_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 VISUAL_MODEL = "clip-ViT-B-32"
+SUMMARIZER_MODEL = "sshleifer/distilbart-cnn-6-6"
+
 
 MODEL_DIR = os.path.join("models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_VISUAL_PATH = os.path.join(MODEL_DIR, "clip-ViT-B-32")
 MODEL_SEMANTIC_PATH = os.path.join(MODEL_DIR, "all-MiniLM-L6-v2")
+MODEL_SUMMARIZER_PATH = os.path.join(MODEL_DIR, "distilbart-cnn-6-6")
 
 if not os.path.exists(MODEL_SEMANTIC_PATH):
     model_semantic = SentenceTransformer(SEMANTIC_MODEL)
@@ -25,4 +28,13 @@ if not os.path.exists(MODEL_VISUAL_PATH):
     model_visual.save(MODEL_VISUAL_PATH)
 else:
     print(f"Visual model already exists at: {MODEL_VISUAL_PATH}")
+
+
+if not os.path.exists(MODEL_SUMMARIZER_PATH):
+    tokenizer = AutoTokenizer.from_pretrained(SUMMARIZER_MODEL)
+    model = AutoModelForSeq2SeqLM.from_pretrained(SUMMARIZER_MODEL)
+    tokenizer.save_pretrained(MODEL_SUMMARIZER_PATH)
+    model.save_pretrained(MODEL_SUMMARIZER_PATH)
+else:
+    print(f"Summarizer model already exists at: {MODEL_SUMMARIZER_PATH}")
 
