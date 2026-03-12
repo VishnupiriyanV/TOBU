@@ -11,7 +11,7 @@ def summary_generator(data):
         chunks = data
     else:
         chunks =" ".join([seg["text"] for seg in data])
-    tokens = tokenizer.encode(chunks,add_special_tokens=False)
+    tokens = tokenizer.encode(chunks, add_special_tokens=True)
     max_tokens = 1024
     final_chunks = []
     for i in range(0, len(tokens), max_tokens):

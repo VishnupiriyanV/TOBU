@@ -134,7 +134,10 @@ def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
 
     results = table.search(query_vector).limit(limit).to_pandas()
 
-    return results.to_dict(orient="records")
+    records = results.to_dict(orient="records")
+    for r in records:
+        r.pop("vector", None)
+    return records
 
     
 
