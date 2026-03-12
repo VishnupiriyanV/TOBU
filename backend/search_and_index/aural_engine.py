@@ -43,7 +43,7 @@ def extract_audio(input_path, output_path=None):
 
 def transcribe_audio(input_path, output_path=None):
     if output_path is None:
-        output_path = os.path.join("backend", "search_and_index", "tempfile", "transcript.json")
+        output_path = os.path.join("backend", "search_and_index", "tempfile", f"transcript_{uuid.uuid4().hex}.json")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     

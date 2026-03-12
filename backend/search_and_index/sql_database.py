@@ -70,7 +70,15 @@ def save_to_db(file_path, file_name, duration, transcript_data,source_type="vide
     connection = sqlite3.connect(DATABASE_PATH)
     cursor = connection.cursor()
 
+    
+
     try:
+        cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (file_path,))
+        existing_row = cursor.fetchone()
+        if existing_row is not None:
+            existing_media_id = existing_row[0]
+            cursor.execute("DELETE FROM transcripts_fts WHERE media_id = ?", (existing_media_id,))
+            cursor.execute("DELETE FROM media_files WHERE id = ?", (existing_media_id,))
         current_hash = compute_file_hash(file_path)
         insert_cmd = """INSERT INTO media_files (file_path,file_name,duration_seconds,source_type,status,summary,file_hash) VALUES (?,?,?,?,'indexed',?,?)"""
         cursor.execute(insert_cmd, (file_path, file_name, duration,source_type, summary,current_hash))
@@ -78,7 +86,10 @@ def save_to_db(file_path, file_name, duration, transcript_data,source_type="vide
         media_id = cursor.lastrowid
 
         data_to_insert = [
-            (media_id, seg.get('start') or seg.get('page'), seg.get('end') or seg.get('page'), seg['text'], file_name)
+            (media_id,
+             seg['start'] if seg.get('start') is not None else seg.get('page'),
+             seg['end'] if seg.get('end') is not None else seg.get('page'),
+             seg['text'], file_name)
             for seg in transcript_data
         ]
 
@@ -152,8 +163,11 @@ def compute_file_hash(path,chunk_size=8192): #8kb
     return h.hexdigest()
 
 
-#return true if the file already indexed
+#return true if the file should be processed (not yet indexed, or hash has changed)
 def should_process(file_path):
+    if not os.path.exists(file_path):
+        return False
+        
     current_hash = compute_file_hash(file_path)
     with sqlite3.connect(DATABASE_PATH) as connection:
         row = connection.execute(
@@ -163,6 +177,21 @@ def should_process(file_path):
     if row is None:
         return True 
     return row[0] != current_hash
+
+def delete_file_records(file_path):
+    """Remove a file's records from media_files and transcripts_fts."""
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT id FROM media_files WHERE file_path = ?", (file_path,))
+        row = cursor.fetchone()
+        if row is None:
+            return
+        media_id = row[0]
+        cursor.execute("DELETE FROM transcripts_fts WHERE media_id = ?", (media_id,))
+        cursor.execute("DELETE FROM media_files WHERE id = ?", (media_id,))
+        connection.commit()
+        print(f"Removed from index: {file_path}")
+
 
 def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None):
     return save_to_db(file_path, file_name, None, segments, source_type=source_type, summary=summary)

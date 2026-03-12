@@ -15,6 +15,7 @@ warnings.filterwarnings("ignore")
 
 
 def process_media(path):
+    initialize_db()
     ext = os.path.splitext(path)[1].lower()
 
     if not should_process(path):
@@ -29,7 +30,7 @@ def process_media(path):
             transcript = transcribe_audio(audio_path)
             os.remove(audio_path)
             summary_text = summary_generator(transcript)
-            initialize_db()
+            
             media_id = save_to_db(path, file_name, duration, transcript, summary=summary_text)
             if media_id:
                 save_to_vector_db(media_id, file_name, path, transcript, summary=summary_text)
@@ -37,11 +38,11 @@ def process_media(path):
                 index_video_visually(path, media_id)
 
     elif ext == ".pdf":
-        initialize_db()
+        
         process_pdf(path)
 
     elif ext in (".md", ".txt"):
-        initialize_db()
+        
         process_file(path)
 
     else:
