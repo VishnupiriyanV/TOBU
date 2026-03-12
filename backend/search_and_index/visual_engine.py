@@ -8,7 +8,7 @@ import json
 import torch
 from model_downloader import MODEL_VISUAL_PATH
 
-INTERVAL_SECONDS =2 #frame extraction 
+INTERVAL_SECONDS = 2  # extract one frame every  seconds
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
 THUMBNAIL_PATH = os.path.join("data", "thumbnails")
 THUMBNAIL_MAX_SIZE= (320,320)
@@ -26,8 +26,12 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
     cap = cv2.VideoCapture(video_path)
 
     fps = cap.get(cv2.CAP_PROP_FPS)
+    if not fps or fps <= 0:
+        print(f"Invalid FPS for video: {video_path}")
+        cap.release()
+        return
 
-    interval = int(fps*INTERVAL_SECONDS) #extract one frame per second
+    interval = int(fps * INTERVAL_SECONDS)
 
     frames_batch = []
     count =0
@@ -64,7 +68,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
             
             
-            img_embedding = visual_model.encode(pil_img)
+            img_embedding = visual_model.encode(pil_img).tolist()
 
 
 

@@ -1,7 +1,7 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from main import process_media
-from sql_database import initialize_db
+from sql_database import initialize_db, delete_file_records
 import os
 import time
 import sys
@@ -18,6 +18,16 @@ class FileHandler(FileSystemEventHandler):
         if event.is_directory:
             return
         self._handle(event.src_path)
+    
+    def on_deleted(self, event):
+        if event.is_directory:
+            return
+        ext = os.path.splitext(event.src_path)[1].lower()
+        if ext in SUPPORTED_EXTENSIONS:
+            try:
+                delete_file_records(event.src_path)
+            except Exception as e:
+                print(f"Error removing {event.src_path}: {e}")
 
     def _handle(self, path):
         ext = os.path.splitext(path)[1].lower()
