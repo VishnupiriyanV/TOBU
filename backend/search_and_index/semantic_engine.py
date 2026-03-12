@@ -54,12 +54,15 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
     data = []
     for i in range(len(windowed_text_lists)):
+        location_start = transcript_data[i].get("start") or transcript_data[i].get("page")
+        location_end = transcript_data[i].get("end") or transcript_data[i].get("page")
+
         data.append({
             "vector" : embeddings[i],
             "text" : transcript_data[i]["text"],
             "context": texts_to_embed[i],
-            "start" : transcript_data[i]["start"],
-            "end":transcript_data[i]["end"],
+            "start" : location_start,
+            "end":location_end,
             "file_name": file_name,
             "file_path":file_path,
             "media_id" : media_id
