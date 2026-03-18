@@ -18,59 +18,91 @@ warnings.filterwarnings("ignore")
 
 
 
-def process_media(path):
+def process_media(path, progress_cb=None):
+    def progress(stage, pct):
+        if progress_cb:
+            progress_cb(stage, pct)
+
     initialize_db()
     ext = os.path.splitext(path)[1].lower()
 
+    progress("checking_hash", 5)
     should_index, current_hash = should_process(path)
     if not should_index:
-        print(f"Already indexed do Skipped : {path}")
-        return
+        progress("skipped_unchanged", 100)
+        print(f"Already indexed so skipped: {path}")
+        return "skipped"
 
     if ext in (".mp4", ".mkv", ".avi", ".mov", ".webm"):
+        progress("extract_audio", 15)
         audio_path = extract_audio(path)
+        if not audio_path:
+            raise RuntimeError("Audio extraction failed")
+
         file_name = get_file_name(path)
+
+        progress("read_duration", 22)
         duration = get_duration(path)
-        if audio_path:
-            transcript = transcribe_audio(audio_path)
+
+        progress("transcribing", 45)
+        transcript = transcribe_audio(audio_path)
+
+        progress("cleanup_temp_audio", 50)
+        if os.path.exists(audio_path):
             os.remove(audio_path)
-            summary_text = summary_generator(transcript)
-            
-            media_id = save_to_db(path, file_name, duration, transcript, summary=summary_text, current_hash=current_hash)
-            if media_id:
-                save_to_vector_db(media_id, file_name, path, transcript, summary=summary_text)
-                save_summary_vector(media_id, file_name, summary_text)
-                index_video_visually(path, media_id)
 
-    elif ext == ".pdf":
-        
+        progress("summarizing", 65)
+        summary_text = summary_generator(transcript)
+
+        progress("save_sql", 75)
+        media_id = save_to_db(
+            path, file_name, duration, transcript,
+            summary=summary_text, current_hash=current_hash
+        )
+        if not media_id:
+            raise RuntimeError("Failed to save media record")
+
+        progress("save_semantic_vectors", 85)
+        save_to_vector_db(media_id, file_name, path, transcript, summary=summary_text)
+
+        progress("save_summary_vector", 90)
+        save_summary_vector(media_id, file_name, summary_text)
+
+        progress("index_visual_frames", 97)
+        index_video_visually(path, media_id)
+
+        progress("finished", 100)
+        return "done"
+
+    if ext == ".pdf":
+        progress("process_pdf", 20)
         process_pdf(path)
+        progress("finished", 100)
+        return "done"
 
-    elif ext in (".md", ".txt"):
-        
+    if ext in (".md", ".txt"):
+        progress("process_text", 20)
         process_file(path)
+        progress("finished", 100)
+        return "done"
 
-    else:
-        print(f"Unsupported file type: {ext}")
+    raise RuntimeError(f"Unsupported file type: {ext}")
 
 def process_job(job):
     job_id = job["id"]
     path = job["file_path"]
 
+    def job_progress(stage, pct):
+        update_job_status(job_id, "running", stage=stage, progress=pct)
+
     try:
-        update_job_status(job_id, "running", stage="checking", progress=5)
+        update_job_status(job_id, "running", stage="starting", progress=1)
+        result = process_media(path, progress_cb=job_progress)
 
-        ext = os.path.splitext(path)[1].lower()
-        if ext in (".mp4", ".mkv", ".avi", ".mov", ".webm"):
-            update_job_status(job_id, "running", stage="media_pipeline", progress=20)
-        elif ext == ".pdf":
-            update_job_status(job_id, "running", stage="pdf_pipeline", progress=20)
-        elif ext in (".md", ".txt"):
-            update_job_status(job_id, "running", stage="doc_pipeline", progress=20)
-
-        process_media(path)
-
-        update_job_status(job_id, "done", stage="finished", progress=100, error_message=None)
+        if result == "skipped":
+            update_job_status(job_id, "done", stage="skipped_unchanged", progress=100, error_message=None)
+        else:
+            update_job_status(job_id, "done", stage="finished", progress=100, error_message=None)
 
     except Exception as e:
         increment_retry(job_id)
@@ -96,5 +128,4 @@ def worker_loop(poll_interval=1.0):
 
 
 if __name__ == "__main__":
-    
     worker_loop()
