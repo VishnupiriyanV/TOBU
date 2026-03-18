@@ -10,7 +10,7 @@ DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
 os.makedirs(DB_DIR, exist_ok=True)
 VECTOR_DB_PATH = os.path.join("data", "database", "vector_data")
 THUMBNAIL_PATH = os.path.join("data", "thumbnails")
-
+RECENT_DUPLICATE_SECONDS = 12
 #create table
 
 def initialize_db():
@@ -270,29 +270,46 @@ def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=N
         current_hash=current_hash,
     )
 
-def enqueue_job (file_path,source_type = None,max_retries = 3):
+def enqueue_job(file_path, source_type=None, max_retries=3):
+    normalized_path = os.path.abspath(file_path)
     with sqlite3.connect(DATABASE_PATH) as connection:
         cursor = connection.cursor()
 
-        #to check if there is a dulpicate job
+        
         cursor.execute(
             """
             SELECT id FROM indexing_jobs
             WHERE file_path = ? AND status IN ('queued', 'running')
+            ORDER BY created_at DESC
             LIMIT 1
             """,
-            (file_path,),
+            (normalized_path,),
         )
         exists = cursor.fetchone()
         if exists:
             return exists[0], False
+
+        # for noisy repeated file-system events
+        cursor.execute(
+            """
+            SELECT id FROM indexing_jobs
+            WHERE file_path = ?
+              AND created_at >= datetime('now', ?)
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (normalized_path, f"-{int(RECENT_DUPLICATE_SECONDS)} seconds"),
+        )
+        recent = cursor.fetchone()
+        if recent:
+            return recent[0], False
 
         cursor.execute(
             """
             INSERT INTO indexing_jobs (file_path, source_type, status, stage, progress, max_retries)
             VALUES (?, ?, 'queued', 'pending', 0, ?)
             """,
-            (file_path, source_type, max_retries),
+            (normalized_path, source_type, max_retries),
         )
         connection.commit()
         return cursor.lastrowid, True
@@ -419,6 +436,7 @@ def reset_stale_running_jobs():
         connection.commit()
 
 def cancel_jobs_for_path(file_path):
+    normalized_path = os.path.abspath(file_path)
     with sqlite3.connect(DATABASE_PATH) as connection:
         cursor = connection.cursor()
         cursor.execute(
@@ -429,6 +447,85 @@ def cancel_jobs_for_path(file_path):
                 updated_at = CURRENT_TIMESTAMP
             WHERE file_path = ? AND status IN ('queued', 'running')
             """,
-            (file_path,),
+            (normalized_path,),
         )
         connection.commit()
+
+def get_job(job_id):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        connection.row_factory = sqlite3.Row
+        row = connection.execute(
+            """
+            SELECT id, file_path, source_type, status, stage, progress, retries,
+                   max_retries, error_message, created_at, updated_at
+            FROM indexing_jobs
+            WHERE id = ?
+            """,
+            (job_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def list_jobs(status=None, limit=100):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        connection.row_factory = sqlite3.Row
+        if status:
+            rows = connection.execute(
+                """
+                SELECT id, file_path, source_type, status, stage, progress, retries,
+                       max_retries, error_message, created_at, updated_at
+                FROM indexing_jobs
+                WHERE status = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (status, limit),
+            ).fetchall()
+        else:
+            rows = connection.execute(
+                """
+                SELECT id, file_path, source_type, status, stage, progress, retries,
+                       max_retries, error_message, created_at, updated_at
+                FROM indexing_jobs
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def retry_job(job_id):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE indexing_jobs
+            SET status = 'queued',
+                stage = 'pending',
+                progress = 0,
+                error_message = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND status IN ('failed', 'cancelled', 'done')
+            """,
+            (job_id,),
+        )
+        connection.commit()
+        return cursor.rowcount == 1
+
+
+def cancel_job(job_id):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE indexing_jobs
+            SET status = 'cancelled',
+                stage = 'cancelled',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND status IN ('queued', 'running')
+            """,
+            (job_id,),
+        )
+        connection.commit()
+        return cursor.rowcount == 1
