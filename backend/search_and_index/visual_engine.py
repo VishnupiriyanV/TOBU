@@ -18,10 +18,31 @@ THUMBNAIL_QUALITY = 80
 device = "cuda" if torch.cuda.is_available() else "cpu"
 visual_model = SentenceTransformer(MODEL_VISUAL_PATH, device=device,model_kwargs={"local_files_only":True})
 
+
+def clear_visual_for_media(media_id, db_path=VECTOR_DB_PATH):
+    db = lancedb.connect(db_path)
+    table_name = "visual_moments"
+
+    if table_name in db.table_names():
+        table = db.open_table(table_name)
+        table.delete(f"media_id = {int(media_id)}")
+
+    if os.path.isdir(THUMBNAIL_PATH):
+        prefix = f"{media_id}_"
+        for name in os.listdir(THUMBNAIL_PATH):
+            if name.startswith(prefix):
+                file_path = os.path.join(THUMBNAIL_PATH, name)
+                try:
+                    os.remove(file_path)
+                except Exception:
+                    pass
+
 def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
     if not os.path.exists(THUMBNAIL_PATH):
         os.makedirs(THUMBNAIL_PATH)
+
+    clear_visual_for_media(media_id, db_path)
 
     cap = cv2.VideoCapture(video_path)
 

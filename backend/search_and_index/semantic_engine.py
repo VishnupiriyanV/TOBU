@@ -15,6 +15,10 @@ MODEL = SentenceTransformer(
 )
 
 
+def _delete_rows_by_media_id(table, media_id):
+    table.delete(f"media_id = {int(media_id)}")
+
+
 #converts text to embedding
 def embed(sentences):
     
@@ -80,6 +84,7 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
     if table_name in db.table_names():
         table = db.open_table(table_name)
+        _delete_rows_by_media_id(table, media_id)
         table.add(data)
     else:
         db.create_table(table_name,data=data)
@@ -122,6 +127,7 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
 
     if table_name in db.table_names():
         table = db.open_table(table_name)
+        _delete_rows_by_media_id(table, media_id)
         table.add(data)
     else:
         db.create_table(table_name, data=data)

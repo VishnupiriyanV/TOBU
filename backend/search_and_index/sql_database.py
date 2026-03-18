@@ -2,11 +2,14 @@ import sqlite3
 import os
 import hashlib
 import time
+import lancedb
 
 
 DB_DIR = os.path.join("data","database")
 DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
 os.makedirs(DB_DIR, exist_ok=True)
+VECTOR_DB_PATH = os.path.join("data", "database", "vector_data")
+THUMBNAIL_PATH = os.path.join("data", "thumbnails")
 
 #create table
 
@@ -228,6 +231,28 @@ def delete_file_records(file_path):
         if row is None:
             return
         media_id = row[0]
+
+        
+        try:
+            db = lancedb.connect(VECTOR_DB_PATH)
+            for table_name in ("semantic_segments", "summary_segments", "visual_moments"):
+                if table_name in db.table_names():
+                    table = db.open_table(table_name)
+                    table.delete(f"media_id = {int(media_id)}")
+        except Exception as e:
+            print(f"Vector cleanup error for {file_path}: {e}")
+
+        
+        if os.path.isdir(THUMBNAIL_PATH):
+            prefix = f"{media_id}_"
+            for name in os.listdir(THUMBNAIL_PATH):
+                if name.startswith(prefix):
+                    thumb_path = os.path.join(THUMBNAIL_PATH, name)
+                    try:
+                        os.remove(thumb_path)
+                    except Exception:
+                        pass
+
         cursor.execute("DELETE FROM transcripts_fts WHERE media_id = ?", (media_id,))
         cursor.execute("DELETE FROM media_files WHERE id = ?", (media_id,))
         connection.commit()
