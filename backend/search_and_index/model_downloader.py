@@ -17,24 +17,32 @@ MODEL_VISUAL_PATH = os.path.join(MODEL_DIR, "clip-ViT-B-32")
 MODEL_SEMANTIC_PATH = os.path.join(MODEL_DIR, "all-MiniLM-L6-v2")
 MODEL_SUMMARIZER_PATH = os.path.join(MODEL_DIR, "distilbart-cnn-6-6")
 
-if not os.path.exists(MODEL_SEMANTIC_PATH):
-    model_semantic = SentenceTransformer(SEMANTIC_MODEL)
-    model_semantic.save(MODEL_SEMANTIC_PATH)
-else:
-    print(f"Semantic model already exists at: {MODEL_SEMANTIC_PATH}")
-
-if not os.path.exists(MODEL_VISUAL_PATH):
-    model_visual = SentenceTransformer(VISUAL_MODEL)
-    model_visual.save(MODEL_VISUAL_PATH)
-else:
-    print(f"Visual model already exists at: {MODEL_VISUAL_PATH}")
+def ensure_semantic_model():
+    if not os.path.exists(MODEL_SEMANTIC_PATH):
+        model_semantic = SentenceTransformer(SEMANTIC_MODEL)
+        model_semantic.save(MODEL_SEMANTIC_PATH)
 
 
-if not os.path.exists(MODEL_SUMMARIZER_PATH):
-    tokenizer = AutoTokenizer.from_pretrained(SUMMARIZER_MODEL)
-    model = AutoModelForSeq2SeqLM.from_pretrained(SUMMARIZER_MODEL)
-    tokenizer.save_pretrained(MODEL_SUMMARIZER_PATH)
-    model.save_pretrained(MODEL_SUMMARIZER_PATH)
-else:
-    print(f"Summarizer model already exists at: {MODEL_SUMMARIZER_PATH}")
+def ensure_visual_model():
+    if not os.path.exists(MODEL_VISUAL_PATH):
+        model_visual = SentenceTransformer(VISUAL_MODEL)
+        model_visual.save(MODEL_VISUAL_PATH)
 
+
+def ensure_summarizer_model():
+    if not os.path.exists(MODEL_SUMMARIZER_PATH):
+        tokenizer = AutoTokenizer.from_pretrained(SUMMARIZER_MODEL)
+        model = AutoModelForSeq2SeqLM.from_pretrained(SUMMARIZER_MODEL)
+        tokenizer.save_pretrained(MODEL_SUMMARIZER_PATH)
+        model.save_pretrained(MODEL_SUMMARIZER_PATH)
+
+
+def ensure_all_models():
+    ensure_semantic_model()
+    ensure_visual_model()
+    ensure_summarizer_model()
+
+
+if __name__ == "__main__":
+    ensure_all_models()
+    print("All local models are ready.")

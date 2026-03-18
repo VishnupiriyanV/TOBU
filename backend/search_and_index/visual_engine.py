@@ -136,8 +136,6 @@ def search_visual_moments(query,image_path = False, db_path=VECTOR_DB_PATH, limi
     
     return results
 
-print(search_visual_moments("image.png",image_path=True))
-
             
             
 
