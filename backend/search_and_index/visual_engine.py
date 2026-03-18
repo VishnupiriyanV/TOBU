@@ -105,7 +105,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
 
 
-def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
+def search_visual_moments(query,image_path = False, db_path=VECTOR_DB_PATH, limit=5):
 
     db = lancedb.connect(db_path)
     table_name = "visual_moments"
@@ -114,9 +114,14 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
         table = db.open_table(table_name)
     except Exception:
         return []
-
-
-    query_vector = visual_model.encode(query_text).tolist()
+    
+    if image_path:
+        img = cv2.imread(query)
+        colour_converted = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        pil_img = Image.fromarray(colour_converted)
+        query_vector = visual_model.encode(pil_img).tolist()
+    else:
+        query_vector = visual_model.encode(query).tolist()
 
 
     results = table.search(query_vector).limit(limit).to_list()
@@ -131,7 +136,7 @@ def search_visual_moments(query_text, db_path=VECTOR_DB_PATH, limit=5):
     
     return results
 
-
+print(search_visual_moments("image.png",image_path=True))
 
             
             
