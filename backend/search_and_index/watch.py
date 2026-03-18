@@ -3,6 +3,7 @@ from watchdog.events import FileSystemEventHandler
 from sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
 import os
 import time
+import argparse
 
 SUPPORTED_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm", ".pdf", ".md", ".txt"}
 TEMP_SUFFIXES = (".tmp", ".part", ".partial", ".crdownload", ".swp", ".swx", "~")
@@ -150,5 +151,9 @@ def start_watcher(folder):
 
 
 if __name__ == "__main__":
-    watch_folder = "watch"
-    start_watcher(watch_folder)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--folder", type=str, default="watch")
+    args = parser.parse_args()
+    start_watcher(args.folder)
+
+    
