@@ -1,8 +1,12 @@
 from aural_engine import extract_audio,get_duration,get_file_name,transcribe_audio
-from sql_database import save_to_db, search_to_json, initialize_db,DATABASE_PATH,should_process
+from sql_database import (
+    save_to_db, initialize_db, should_process,
+    fetch_next_job, update_job_status, increment_retry, get_job_retries,
+    requeue_job, reset_stale_running_jobs
+)
+
 from semantic_engine import save_to_vector_db, save_summary_vector
 from document_engine import process_pdf, process_file
-import sqlite3
 from summarizer import summary_generator
 from visual_engine import index_video_visually
 import warnings
@@ -49,12 +53,48 @@ def process_media(path):
     else:
         print(f"Unsupported file type: {ext}")
 
+def process_job(job):
+    job_id = job["id"]
+    path = job["file_path"]
+
+    try:
+        update_job_status(job_id, "running", stage="checking", progress=5)
+
+        ext = os.path.splitext(path)[1].lower()
+        if ext in (".mp4", ".mkv", ".avi", ".mov", ".webm"):
+            update_job_status(job_id, "running", stage="media_pipeline", progress=20)
+        elif ext == ".pdf":
+            update_job_status(job_id, "running", stage="pdf_pipeline", progress=20)
+        elif ext in (".md", ".txt"):
+            update_job_status(job_id, "running", stage="doc_pipeline", progress=20)
+
+        process_media(path)
+
+        update_job_status(job_id, "done", stage="finished", progress=100, error_message=None)
+
+    except Exception as e:
+        increment_retry(job_id)
+        retries, max_retries = get_job_retries(job_id)
+
+        if retries < max_retries:
+            update_job_status(job_id, "queued", stage="retrying", progress=0, error_message=str(e))
+            requeue_job(job_id)
+        else:
+            update_job_status(job_id, "failed", stage="failed", progress=0, error_message=str(e))
+
+
+def worker_loop(poll_interval=1.0):
+    initialize_db()
+    reset_stale_running_jobs()
+
+    while True:
+        job = fetch_next_job()
+        if job is None:
+            time.sleep(poll_interval)
+            continue
+        process_job(job)
+
 
 if __name__ == "__main__":
     
-    path = "C:/Helm/FossHack/TOBU/test3.mp4"
-
-    start = time.time()
-    process_media(path)
-    end = time.time()
-    print("Execution time:", end - start)
+    worker_loop()

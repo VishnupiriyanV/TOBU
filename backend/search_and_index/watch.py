@@ -1,14 +1,17 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from main import process_media
-from sql_database import initialize_db, delete_file_records
+from sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
 import os
 import time
-import sys
 
 SUPPORTED_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm", ".pdf", ".md", ".txt"}
 
 class FileHandler(FileSystemEventHandler):
+    def __init__(self):
+        super().__init__()
+        self._last_event_time = {}
+        self._debounce_seconds = 2.0
+
     def on_created(self, event):
         if event.is_directory:
             return
@@ -25,6 +28,7 @@ class FileHandler(FileSystemEventHandler):
         ext = os.path.splitext(event.src_path)[1].lower()
         if ext in SUPPORTED_EXTENSIONS:
             try:
+                cancel_jobs_for_path(event.src_path)
                 delete_file_records(event.src_path)
             except Exception as e:
                 print(f"Error removing {event.src_path}: {e}")
@@ -33,11 +37,25 @@ class FileHandler(FileSystemEventHandler):
         ext = os.path.splitext(path)[1].lower()
         if ext not in SUPPORTED_EXTENSIONS:
             return
-        time.sleep(2)
-        try:
-            process_media(path)
-        except Exception as e:
-            print(f"Error processing {path}: {e}")
+
+        now = time.time()
+        last = self._last_event_time.get(path, 0)
+        if now - last < self._debounce_seconds:
+            return
+        self._last_event_time[path] = now
+
+        if not os.path.exists(path):
+            return
+
+        source_type = {
+            ".pdf": "pdf",
+            ".md": "note",
+            ".txt": "note",
+        }.get(ext, "video")
+
+        job_id, created = enqueue_job(path, source_type=source_type)
+        if created:
+            print(f"Queued job {job_id}: {path}")
     
 def initial_scan(folder):
     for root, _, files in os.walk(folder):
@@ -45,10 +63,15 @@ def initial_scan(folder):
             path = os.path.join(root, f)
             ext = os.path.splitext(path)[1].lower()
             if ext in SUPPORTED_EXTENSIONS:
+                source_type = {
+                    ".pdf": "pdf",
+                    ".md": "note",
+                    ".txt": "note",
+                }.get(ext, "video")
                 try:
-                    process_media(path)
+                    enqueue_job(path, source_type=source_type)
                 except Exception as e:
-                    print(f"Error processing {path}: {e}")
+                    print(f"Error queueing {path}: {e}")
 
 
 def start_watcher(folder):
@@ -70,5 +93,5 @@ def start_watcher(folder):
 
 
 if __name__ == "__main__":
-    watch_folder = "watch_folder"
+    watch_folder = "watch"
     start_watcher(watch_folder)
