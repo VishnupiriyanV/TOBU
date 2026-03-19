@@ -10,7 +10,9 @@ from model_downloader import MODEL_VISUAL_PATH
 
 INTERVAL_SECONDS = 2  # extract one frame every  seconds
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
-THUMBNAIL_PATH = os.path.join("data", "thumbnails")
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+THUMBNAIL_PATH = os.path.join(PROJECT_ROOT, "data", "thumbnails")
 THUMBNAIL_MAX_SIZE= (320,320)
 THUMBNAIL_QUALITY = 80
 

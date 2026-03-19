@@ -6,7 +6,9 @@ import pandas as pd
 import os
 from model_downloader import MODEL_SEMANTIC_PATH
 
-VECTOR_DB_PATH = os.path.join("data", "database", "vector_data")
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+VECTOR_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "vector_data")
 
 # Load model in offline mode
 MODEL = SentenceTransformer(

@@ -5,11 +5,13 @@ import time
 import lancedb
 
 
-DB_DIR = os.path.join("data","database")
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+DB_DIR = os.path.join(PROJECT_ROOT, "data", "database")
 DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
 os.makedirs(DB_DIR, exist_ok=True)
-VECTOR_DB_PATH = os.path.join("data", "database", "vector_data")
-THUMBNAIL_PATH = os.path.join("data", "thumbnails")
+VECTOR_DB_PATH = os.path.join(DB_DIR, "vector_data")
+THUMBNAIL_PATH = os.path.join(PROJECT_ROOT, "data", "thumbnails")
 RECENT_DUPLICATE_SECONDS = 12
 #create table
 

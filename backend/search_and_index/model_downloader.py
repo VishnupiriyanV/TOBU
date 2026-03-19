@@ -10,7 +10,9 @@ VISUAL_MODEL = "clip-ViT-B-32"
 SUMMARIZER_MODEL = "sshleifer/distilbart-cnn-6-6"
 
 
-MODEL_DIR = os.path.join("models")
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 MODEL_VISUAL_PATH = os.path.join(MODEL_DIR, "clip-ViT-B-32")
