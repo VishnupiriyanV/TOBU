@@ -2,6 +2,8 @@ import sqlite3
 import os
 import hashlib
 import time
+import shutil
+from datetime import datetime
 import lancedb
 
 
@@ -530,3 +532,101 @@ def cancel_job(job_id):
         )
         connection.commit()
         return cursor.rowcount == 1
+
+
+def get_media_detail(media_id):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        connection.row_factory = sqlite3.Row
+        row = connection.execute(
+            """
+            SELECT id, file_path, file_name, source_type, duration_seconds,
+                   summary, added_at, status, file_hash
+            FROM media_files
+            WHERE id = ?
+            """,
+            (media_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def get_media_segments(media_id, limit=200):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        connection.row_factory = sqlite3.Row
+        rows = connection.execute(
+            """
+            SELECT location_start AS start,
+                   location_end AS end,
+                   content AS text,
+                   file_name
+            FROM transcripts_fts
+            WHERE media_id = ?
+            LIMIT ?
+            """,
+            (media_id, limit),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_db_stats():
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        media_count = cursor.execute("SELECT COUNT(*) FROM media_files").fetchone()[0]
+        jobs_count = cursor.execute("SELECT COUNT(*) FROM indexing_jobs").fetchone()[0]
+        queued = cursor.execute("SELECT COUNT(*) FROM indexing_jobs WHERE status = 'queued'").fetchone()[0]
+        running = cursor.execute("SELECT COUNT(*) FROM indexing_jobs WHERE status = 'running'").fetchone()[0]
+        failed = cursor.execute("SELECT COUNT(*) FROM indexing_jobs WHERE status = 'failed'").fetchone()[0]
+
+    return {
+        "media_files": media_count,
+        "jobs_total": jobs_count,
+        "jobs_queued": queued,
+        "jobs_running": running,
+        "jobs_failed": failed,
+    }
+
+
+def integrity_check():
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        row = connection.execute("PRAGMA integrity_check;").fetchone()
+        sqlite_ok = bool(row and row[0] == "ok")
+
+    vector_tables = []
+    vector_ok = True
+    try:
+        db = lancedb.connect(VECTOR_DB_PATH)
+        vector_tables = sorted(db.table_names())
+    except Exception:
+        vector_ok = False
+
+    return {
+        "sqlite_integrity": "ok" if sqlite_ok else "fail",
+        "vector_store": "ok" if vector_ok else "fail",
+        "vector_tables": vector_tables,
+        "database_path": DATABASE_PATH,
+    }
+
+
+def create_backup(label=None):
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    name = f"backup_{label}_{ts}" if label else f"backup_{ts}"
+    backup_root = os.path.join(PROJECT_ROOT, "data", "backups", name)
+    os.makedirs(backup_root, exist_ok=True)
+
+    db_dst = os.path.join(backup_root, "brain.db")
+    if os.path.exists(DATABASE_PATH):
+        shutil.copy2(DATABASE_PATH, db_dst)
+
+    vector_dst = os.path.join(backup_root, "vector_data")
+    if os.path.isdir(VECTOR_DB_PATH):
+        shutil.copytree(VECTOR_DB_PATH, vector_dst, dirs_exist_ok=True)
+
+    thumbs_dst = os.path.join(backup_root, "thumbnails")
+    if os.path.isdir(THUMBNAIL_PATH):
+        shutil.copytree(THUMBNAIL_PATH, thumbs_dst, dirs_exist_ok=True)
+
+    return {
+        "backup_path": backup_root,
+        "database_copied": os.path.exists(db_dst),
+        "vector_copied": os.path.isdir(vector_dst),
+        "thumbnails_copied": os.path.isdir(thumbs_dst),
+    }

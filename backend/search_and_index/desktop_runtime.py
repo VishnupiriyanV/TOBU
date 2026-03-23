@@ -4,14 +4,39 @@ import time
 import signal
 import sqlite3
 import subprocess
+import traceback
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parents[1]  # TOBU root
 WATCH_FOLDER = str((ROOT_DIR / "watch").resolve())
+LOG_DIR = ROOT_DIR / "data" / "logs"
+SUPERVISOR_LOG = LOG_DIR / "supervisor.log"
 
 RUNNING = True
 PROCS = {}
+
+
+def _log(message):
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    line = f"[{timestamp}] {message}"
+    print(line)
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        with open(SUPERVISOR_LOG, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
+
+def _preflight_checks():
+    (ROOT_DIR / "data" / "database").mkdir(parents=True, exist_ok=True)
+    (ROOT_DIR / "data" / "thumbnails").mkdir(parents=True, exist_ok=True)
+    Path(WATCH_FOLDER).mkdir(parents=True, exist_ok=True)
+    if not (BASE_DIR / "main.py").exists():
+        raise RuntimeError("Missing main.py in backend/search_and_index")
+    if not (BASE_DIR / "watch.py").exists():
+        raise RuntimeError("Missing watch.py in backend/search_and_index")
 
 def health_check():
     try:
@@ -35,6 +60,7 @@ def _spawn(name, args):
 def start_children():
     PROCS["worker"] = _spawn("worker", ["main.py", "--mode", "worker"])
     PROCS["watcher"] = _spawn("watcher", ["watch.py", "--folder", WATCH_FOLDER])
+    _log("started child processes: worker, watcher")
 
 def stop_children():
     for _, p in PROCS.items():
@@ -48,11 +74,12 @@ def stop_children():
             time.sleep(0.1)
         if p.poll() is None:
             p.kill()
+    _log("all child processes stopped")
 
 def restart_if_dead():
     for name, p in list(PROCS.items()):
         if p and p.poll() is not None:
-            print(f"[supervisor] {name} exited with code {p.returncode}, restarting...")
+            _log(f"{name} exited with code {p.returncode}, restarting")
             if name == "worker":
                 PROCS[name] = _spawn("worker", ["main.py", "--mode", "worker"])
             elif name == "watcher":
@@ -64,26 +91,30 @@ def _handle_signal(sig, frame):
 
 def main():
     global RUNNING
-
+    _preflight_checks()
     ok, msg = health_check()
     if not ok:
-        print(f"[supervisor] health check failed: {msg}")
+        _log(f"health check failed: {msg}")
         return
 
     signal.signal(signal.SIGINT, _handle_signal)
     signal.signal(signal.SIGTERM, _handle_signal)
 
-    print("[supervisor] starting worker + watcher")
+    _log("starting worker + watcher")
     start_children()
 
     try:
         while RUNNING:
             restart_if_dead()
             time.sleep(1.0)
+    except Exception as e:
+        _log(f"supervisor exception: {e}")
+        _log(traceback.format_exc())
+        raise
     finally:
-        print("[supervisor] shutting down")
+        _log("shutting down")
         stop_children()
-        print("[supervisor] stopped")
+        _log("stopped")
 
 if __name__ == "__main__":
     main()

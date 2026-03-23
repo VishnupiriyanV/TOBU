@@ -3,12 +3,24 @@ import os
 
 if __package__:
     from . import sql_database
-    from . import runtime_service
-    from .semantic_engine import semantic_search as raw_semantic_search
 else:
     import sql_database
-    import runtime_service
-    from semantic_engine import semantic_search as raw_semantic_search
+
+
+def _get_runtime_service():
+    if __package__:
+        from . import runtime_service as _runtime_service
+    else:
+        import runtime_service as _runtime_service
+    return _runtime_service
+
+
+def _get_raw_semantic_search():
+    if __package__:
+        from .semantic_engine import semantic_search as _raw_semantic_search
+    else:
+        from semantic_engine import semantic_search as _raw_semantic_search
+    return _raw_semantic_search
 
 #converts to api standard 
 def normalize_result_item(item: Dict[Any, Any]) -> Dict[str, Any]:
@@ -46,6 +58,7 @@ def cancel_job_by_id(job_id: int) -> bool:
     return sql_database.cancel_job(job_id)
 
 def search_hybrid(payload: Any) -> List[Dict[str, Any]]:
+    runtime_service = _get_runtime_service()
     raw_results = runtime_service.hybrid_search_rrf(
         query=payload.query,
         limit=payload.limit,
@@ -63,6 +76,7 @@ def search_hybrid(payload: Any) -> List[Dict[str, Any]]:
 
 
 def search_semantic(query: str, limit: int) -> List[Dict[str, Any]]:
+    raw_semantic_search = _get_raw_semantic_search()
     results = raw_semantic_search(query, limit) or []
     return [normalize_result_item(r) for r in results]
 
@@ -98,3 +112,26 @@ def reindex_file(file_path: str) -> Dict[str, Any]:
 def delete_file(file_path: str):
     sql_database.cancel_jobs_for_path(file_path)
     sql_database.delete_file_records(file_path)
+
+
+def get_media_detail(media_id: int) -> Optional[Dict[str, Any]]:
+    return sql_database.get_media_detail(media_id)
+
+
+def get_media_segments(media_id: int, limit: int = 200) -> List[Dict[str, Any]]:
+    return sql_database.get_media_segments(media_id, limit=limit)
+
+
+def system_status() -> Dict[str, Any]:
+    return {
+        "health": health_status(),
+        "db_stats": sql_database.get_db_stats(),
+    }
+
+
+def run_integrity_check() -> Dict[str, Any]:
+    return sql_database.integrity_check()
+
+
+def create_backup(label: Optional[str] = None) -> Dict[str, Any]:
+    return sql_database.create_backup(label=label)

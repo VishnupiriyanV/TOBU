@@ -18,4 +18,14 @@ async def get_health():
 
 @router.get("/system/status", response_model=EnvelopeSuccess)
 async def get_system_status():
-    return {"ok": True, "data": api_service.health_status()}
+    return {"ok": True, "data": api_service.system_status()}
+
+
+@router.get("/system/integrity", response_model=EnvelopeSuccess)
+async def get_integrity():
+    return {"ok": True, "data": api_service.run_integrity_check()}
+
+
+@router.post("/system/backup", response_model=EnvelopeSuccess)
+async def create_backup(label: str | None = None):
+    return {"ok": True, "data": api_service.create_backup(label=label)}
