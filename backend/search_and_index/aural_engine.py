@@ -6,6 +6,11 @@ import uuid
 import torch
 
 
+MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+TEMP_DIR = os.path.join(PROJECT_ROOT, "data", "temp")
+
+
 if torch.cuda.is_available():
     device = "cuda"
     compute = "int8"
@@ -21,7 +26,7 @@ def extract_audio(input_path, output_path=None):
     """converts to 16kHz mono WAV."""
 
     if output_path is None:
-        output_path = f"backend/search_and_index/tempfile/temp_{uuid.uuid4().hex}.wav"
+        output_path = os.path.join(TEMP_DIR, f"temp_{uuid.uuid4().hex}.wav")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
@@ -43,7 +48,7 @@ def extract_audio(input_path, output_path=None):
 
 def transcribe_audio(input_path, output_path=None):
     if output_path is None:
-        output_path = os.path.join("backend", "search_and_index", "tempfile", f"transcript_{uuid.uuid4().hex}.json")
+        output_path = os.path.join(TEMP_DIR, f"transcript_{uuid.uuid4().hex}.json")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     

@@ -57,6 +57,22 @@ def _spawn(name, args):
         text=True,
     )
 
+
+def _is_expected_exit(returncode):
+    # 
+    # 0 - clean exit
+    # 1 -  scripts exit 1 on KeyboardInterrupt
+    # 130 = SIGINT-style exit code on Unix-like conventions
+    return returncode in (0, 1, 130)
+
+
+def _classify_exit(name, returncode):
+    if not RUNNING and _is_expected_exit(returncode):
+        return "expected_shutdown"
+    if _is_expected_exit(returncode):
+        return "possible_manual_interrupt"
+    return "crash"
+
 def start_children():
     PROCS["worker"] = _spawn("worker", ["main.py", "--mode", "worker"])
     PROCS["watcher"] = _spawn("watcher", ["watch.py", "--folder", WATCH_FOLDER])
@@ -79,7 +95,21 @@ def stop_children():
 def restart_if_dead():
     for name, p in list(PROCS.items()):
         if p and p.poll() is not None:
-            _log(f"{name} exited with code {p.returncode}, restarting")
+            exit_type = _classify_exit(name, p.returncode)
+            if exit_type == "expected_shutdown":
+                _log(f"{name} exited with code {p.returncode} (expected during shutdown)")
+                continue
+
+            if exit_type == "possible_manual_interrupt":
+                _log(f"{name} exited with code {p.returncode} (manual interrupt or controlled stop)")
+                if not RUNNING:
+                    continue
+
+            if exit_type == "crash":
+                _log(f"{name} exited with code {p.returncode} (crash), restarting")
+            else:
+                _log(f"{name} exited with code {p.returncode}, restarting")
+
             if name == "worker":
                 PROCS[name] = _spawn("worker", ["main.py", "--mode", "worker"])
             elif name == "watcher":
