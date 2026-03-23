@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from typing import List
 from .api_models import EnvelopeSuccess, HybridSearchRequest, HybridResultItem
 from . import api_service
@@ -19,11 +19,14 @@ async def search_hybrid(payload: HybridSearchRequest):
     }
 
 @router.post("/semantic", response_model=EnvelopeSuccess[dict])
-async def search_semantic_endpoint(query: str, limit: int = 20):
+async def search_semantic_endpoint(
+    query: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=200)
+):
     results = api_service.search_semantic(query, limit)
     return {"ok": True, "data": {"count": len(results), "items": results}}
 
 @router.post("/keyword", response_model=EnvelopeSuccess[dict])
-async def search_keyword_endpoint(query: str):
+async def search_keyword_endpoint(query: str = Query(..., min_length=1)):
     results = api_service.search_keyword(query)
     return {"ok": True, "data": {"count": len(results), "items": results}}

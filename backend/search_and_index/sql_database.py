@@ -507,7 +507,7 @@ def retry_job(job_id):
                 progress = 0,
                 error_message = NULL,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = ? AND status IN ('failed', 'cancelled', 'done')
+            WHERE id = ? AND status IN ('failed', 'cancelled')
             """,
             (job_id,),
         )

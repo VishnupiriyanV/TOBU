@@ -7,7 +7,7 @@ router = APIRouter(prefix="/api/v1/jobs", tags=["Jobs"])
 
 @router.get("/", response_model=EnvelopeSuccess[dict])
 async def list_jobs(
-    status: Optional[str] = Query(None, regex="^(queued|running|failed|done|cancelled)$"),
+    status: Optional[str] = Query(None, pattern="^(queued|running|failed|done|cancelled)$"),
     limit: int = Query(100, ge=1, le=500)
 ):
     
