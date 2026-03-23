@@ -260,7 +260,6 @@ def delete_file_records(file_path):
         connection.commit()
         print(f"Removed from index: {file_path}")
 
-
 def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None, current_hash=None):
     return save_to_db(
         file_path,

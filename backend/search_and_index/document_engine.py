@@ -1,9 +1,15 @@
 import os
 import fitz
-from semantic_engine import save_to_vector_db, save_summary_vector
-from summarizer import summary_generator
-from sql_database import save_doc_to_db
 import frontmatter
+
+if __package__:
+    from .semantic_engine import save_to_vector_db, save_summary_vector
+    from .summarizer import summary_generator
+    from .sql_database import save_doc_to_db
+else:
+    from semantic_engine import save_to_vector_db, save_summary_vector
+    from summarizer import summary_generator
+    from sql_database import save_doc_to_db
 
 
 def process_file(file_path):

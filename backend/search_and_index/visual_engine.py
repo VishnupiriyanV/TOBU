@@ -1,12 +1,17 @@
 import cv2
 from PIL import Image
 import os
-from semantic_engine import VECTOR_DB_PATH
 from sentence_transformers import SentenceTransformer, util
 import lancedb
 import json
 import torch
-from model_downloader import MODEL_VISUAL_PATH
+
+if __package__:
+    from .semantic_engine import VECTOR_DB_PATH
+    from .model_downloader import MODEL_VISUAL_PATH
+else:
+    from semantic_engine import VECTOR_DB_PATH
+    from model_downloader import MODEL_VISUAL_PATH
 
 INTERVAL_SECONDS = 2  # extract one frame every  seconds
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
@@ -127,7 +132,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
 
 
-
+# /?query=image.png&image_path=true
 def search_visual_moments(query,image_path = False, db_path=VECTOR_DB_PATH, limit=5):
 
     db = lancedb.connect(db_path)

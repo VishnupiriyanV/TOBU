@@ -4,7 +4,11 @@ import lancedb
 import json
 import pandas as pd
 import os
-from model_downloader import MODEL_SEMANTIC_PATH
+
+if __package__:
+    from .model_downloader import MODEL_SEMANTIC_PATH
+else:
+    from model_downloader import MODEL_SEMANTIC_PATH
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))

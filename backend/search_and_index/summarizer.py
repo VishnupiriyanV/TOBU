@@ -1,6 +1,10 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
-from model_downloader import MODEL_SUMMARIZER_PATH
+
+if __package__:
+    from .model_downloader import MODEL_SUMMARIZER_PATH
+else:
+    from model_downloader import MODEL_SUMMARIZER_PATH
 
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_SUMMARIZER_PATH)
