@@ -1,0 +1,27 @@
+import './Header.css';
+
+export default function Header() {
+  return (
+    <header className="topbar">
+      <div className="topbar-left">
+        <span className="topbar-brand">TOBU</span>
+      </div>
+      <div className="topbar-right">
+        <div className="topbar-search">
+          <input
+            type="text"
+            className="topbar-search-input"
+            placeholder="Search Command Palette..."
+          />
+          <span className="topbar-search-shortcut">⌘P</span>
+        </div>
+        <button className="topbar-icon-btn" title="Notifications">
+          <span className="material-symbols-outlined">notifications</span>
+        </button>
+        <button className="topbar-icon-btn" title="Help">
+          <span className="material-symbols-outlined">help_outline</span>
+        </button>
+      </div>
+    </header>
+  );
+}
