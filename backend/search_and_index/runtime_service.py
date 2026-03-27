@@ -119,6 +119,7 @@ def process_job(job):
     path = job["file_path"]
 
     def job_progress(stage, pct):
+        print(f"[TOBU] Job {job_id}: {stage} ({pct}%)")
         update_job_status(job_id, "running", stage=stage, progress=pct)
 
     try:

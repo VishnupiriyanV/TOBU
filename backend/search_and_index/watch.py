@@ -1,8 +1,14 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
+if __package__:
+    from .sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
+    from .runtime_service import worker_loop
+else:
+    from sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
+    from runtime_service import worker_loop
 import os
 import time
+import threading
 import argparse
 
 SUPPORTED_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm", ".pdf", ".md", ".txt"}
@@ -13,7 +19,7 @@ TEMP_NAMES = {"thumbs.db", ".ds_store"}
 class FileHandler(FileSystemEventHandler):
     def __init__(self):
         super().__init__()
-        self._last_event_time = {}
+        self._timers = {}
         self._debounce_seconds = 2.0
         self._stability_wait_seconds = 1.2
         self._stability_checks = 2
@@ -31,13 +37,19 @@ class FileHandler(FileSystemEventHandler):
     def on_deleted(self, event):
         if event.is_directory:
             return
-        ext = os.path.splitext(event.src_path)[1].lower()
+        
+        path = event.src_path
+        if path in self._timers:
+            self._timers[path].cancel()
+            del self._timers[path]
+            
+        ext = os.path.splitext(path)[1].lower()
         if ext in SUPPORTED_EXTENSIONS:
             try:
-                cancel_jobs_for_path(event.src_path)
-                delete_file_records(event.src_path)
+                cancel_jobs_for_path(path)
+                delete_file_records(path)
             except Exception as e:
-                print(f"Error removing {event.src_path}: {e}")
+                print(f"[TOBU] Error removing {path}: {e}")
 
     def _is_temporary_file(self, path):
         name = os.path.basename(path).lower()
@@ -89,18 +101,24 @@ class FileHandler(FileSystemEventHandler):
         if self._is_temporary_file(path):
             return
 
-        now = time.time()
-        last = self._last_event_time.get(path, 0.0)
-        if now - last < self._debounce_seconds:
-            return
-        self._last_event_time[path] = now
-
+        if path in self._timers:
+            self._timers[path].cancel()
+            
+        timer = threading.Timer(self._debounce_seconds, self._process_after_debounce, args=(path,))
+        self._timers[path] = timer
+        timer.start()
+        
+    def _process_after_debounce(self, path):
+        if path in self._timers:
+            del self._timers[path]
+            
         if not os.path.exists(path):
             return
 
         if not self._is_file_stable(path):
             return
 
+        ext = os.path.splitext(path)[1].lower()
         source_type = {
             ".pdf": "pdf",
             ".md": "note",
@@ -109,7 +127,7 @@ class FileHandler(FileSystemEventHandler):
 
         job_id, created = enqueue_job(path, source_type=source_type)
         if created:
-            print(f"Queued job {job_id}: {path}")
+            print(f"[TOBU] FileWatcher queued job {job_id}: {path}")
 
 
 def initial_scan(folder):
@@ -133,6 +151,17 @@ def initial_scan(folder):
 
 def start_watcher(folder):
     initialize_db()
+
+    # Start worker thread to process queued jobs
+    worker_thread = threading.Thread(
+        target=worker_loop,
+        kwargs={"poll_interval": 1.0},
+        daemon=True,
+        name="tobu-worker",
+    )
+    worker_thread.start()
+    print(f"[TOBU] Worker thread started — jobs will be processed automatically")
+
     print(f"Initial scan on: {folder}")
     initial_scan(folder)
     print(f"Watching for changes in: {folder}")
