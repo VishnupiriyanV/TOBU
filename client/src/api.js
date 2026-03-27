@@ -58,6 +58,9 @@ export const getMediaSegments = (id, limit = 200) =>
 export const getMediaServeUrl = (filePath) => 
   `/api/v1/media/serve?file_path=${encodeURIComponent(filePath)}`;
 
+export const openMediaNative = (filePath) =>
+  api.post('/media/open', { file_path: filePath }).then(unwrap);
+
 // ── System ──
 export const getHealth = () =>
   api.get('/health').then(unwrap);
@@ -72,5 +75,12 @@ export const createBackup = (label = null) => {
   const params = label ? `?label=${encodeURIComponent(label)}` : '';
   return api.post(`/system/backup${params}`).then(unwrap);
 };
+
+export const browseFile = () =>
+  api.get('/system/browse-file').then(unwrap);
+
+export const browseFolder = () =>
+  api.get('/system/browse-folder').then(unwrap);
+
 
 export default api;

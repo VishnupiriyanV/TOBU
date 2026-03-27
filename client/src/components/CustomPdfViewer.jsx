@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { openMediaNative } from '../api';
 import './CustomPdfViewer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -14,6 +15,23 @@ export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, tim
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(initialPage);
   const [loading, setLoading] = useState(true);
+  const [containerWidth, setContainerWidth] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(Math.floor(entry.contentRect.width));
+      }
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
 
   // When timestamp changes, try to jump to related page
   // A rough heuristic: if we have a timestamp like 30s, and we know page average,
@@ -43,6 +61,24 @@ export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, tim
     setPageNumber((prev) => Math.min(prev + 1, numPages || 1));
   }
 
+  function handleOpenInBrowser() {
+    window.open(fileUrl, '_blank');
+  }
+
+  async function handleOpenInApp() {
+    try {
+      const urlObj = new URL(fileUrl, window.location.origin);
+      const filePath = urlObj.searchParams.get('file_path');
+      if (filePath) {
+        await openMediaNative(filePath);
+      } else {
+        console.error("No file_path parameter found in URL");
+      }
+    } catch (err) {
+      console.error("Failed to open file natively", err);
+    }
+  }
+
   return (
     <div className="custom-pdf-viewer">
       <div className="pdf-toolbar">
@@ -63,12 +99,21 @@ export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, tim
           </button>
         </div>
 
-        <button className="pdf-close-btn" onClick={onClose} title="Close PDF Viewer">
-          <span className="material-symbols-outlined">close</span>
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button onClick={handleOpenInBrowser} className="pdf-btn" title="View in Browser">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>open_in_new</span>
+          </button>
+          <button onClick={handleOpenInApp} className="pdf-btn" title="View in App">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>desktop_windows</span>
+          </button>
+          <div style={{ width: '1px', height: '20px', backgroundColor: 'var(--border)' }}></div>
+          <button className="pdf-close-btn" onClick={onClose} title="Close PDF Viewer">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
 
-      <div className="pdf-document-container">
+      <div className="pdf-document-container" ref={containerRef}>
         {loading && <div className="pdf-loading">Loading PDF...</div>}
         <Document
           file={fileUrl}
@@ -82,7 +127,7 @@ export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, tim
               renderTextLayer={true}
               renderAnnotationLayer={true}
               className="pdf-page"
-              width={undefined} // Let CSS handle responsiveness if needed, or leave default
+              width={containerWidth ? containerWidth : undefined}
             />
           )}
         </Document>

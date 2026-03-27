@@ -1,10 +1,16 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 import os
+import sys
+import subprocess
 import urllib.parse
 from pathlib import Path
+from pydantic import BaseModel
 from .api_models import EnvelopeSuccess
 from . import api_service
+
+class OpenMediaRequest(BaseModel):
+    file_path: str
 
 router = APIRouter(prefix="/api/v1/media", tags=["Media"])
 
@@ -34,6 +40,42 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
         
     media_type = "application/pdf" if resolved_path.suffix.lower() == ".pdf" else None
     return FileResponse(resolved_path, media_type=media_type)
+
+
+@router.post("/open", response_model=EnvelopeSuccess)
+async def open_media_native(payload: OpenMediaRequest):
+    decoded_path = urllib.parse.unquote(payload.file_path)
+    
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    watch_dir = base_dir / "watch"
+    
+    path_obj = Path(decoded_path)
+    if not path_obj.is_absolute():
+        path_obj = watch_dir / path_obj
+        
+    resolved_path = path_obj.resolve()
+    
+    # Security check: must be inside the watch_dir
+    try:
+        resolved_path.relative_to(watch_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Forbidden: Path must be within watch directory")
+        
+    # File existence check
+    if not resolved_path.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found: {resolved_path}")
+        
+    try:
+        if os.name == 'nt':
+            os.startfile(resolved_path)
+        elif sys.platform == 'darwin':
+            subprocess.run(['open', resolved_path], check=True)
+        else:
+            subprocess.run(['xdg-open', resolved_path], check=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
+    return {"ok": True, "data": {"message": "Opened successfully"}}
 
 
 @router.get("/{media_id}", response_model=EnvelopeSuccess)

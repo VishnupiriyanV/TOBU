@@ -1,6 +1,33 @@
 from fastapi import APIRouter, HTTPException
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from .api_models import EnvelopeSuccess, EnvelopeError, ErrorBody
 from . import api_service
+
+executor = ThreadPoolExecutor(max_workers=1)
+
+def _prompt_file():
+    import tkinter as tk
+    from tkinter import filedialog
+    import os
+    # Provide a hidden window for the dialog
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    path = filedialog.askopenfilename(parent=root, title="Select File")
+    root.destroy()
+    return path
+
+def _prompt_folder():
+    import tkinter as tk
+    from tkinter import filedialog
+    import os
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    path = filedialog.askdirectory(parent=root, title="Select Folder")
+    root.destroy()
+    return path
 
 router = APIRouter(prefix="/api/v1")
 
@@ -29,3 +56,15 @@ async def get_integrity():
 @router.post("/system/backup", response_model=EnvelopeSuccess)
 async def create_backup(label: str | None = None):
     return {"ok": True, "data": api_service.create_backup(label=label)}
+
+@router.get("/system/browse-file", response_model=EnvelopeSuccess)
+async def system_browse_file():
+    loop = asyncio.get_event_loop()
+    path = await loop.run_in_executor(executor, _prompt_file)
+    return {"ok": True, "data": {"path": path or ""}}
+
+@router.get("/system/browse-folder", response_model=EnvelopeSuccess)
+async def system_browse_folder():
+    loop = asyncio.get_event_loop()
+    path = await loop.run_in_executor(executor, _prompt_folder)
+    return {"ok": True, "data": {"path": path or ""}}

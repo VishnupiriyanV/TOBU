@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ingestFile, ingestFolder, reindexFile, deleteFile } from '../api';
+import { ingestFile, ingestFolder, reindexFile, deleteFile, browseFile, browseFolder } from '../api';
 import './IngestPage.css';
 
 export default function IngestPage() {
@@ -72,6 +72,28 @@ export default function IngestPage() {
     }
   };
 
+  const handleBrowseFileForIngest = async () => {
+    try {
+      const res = await browseFile();
+      if (res.path) setFilePath(res.path);
+    } catch (err) { console.error("Browse file failed", err); }
+  };
+
+  const handleBrowseFolderForIngest = async () => {
+    try {
+      const res = await browseFolder();
+      if (res.path) setFolderPath(res.path);
+    } catch (err) { console.error("Browse folder failed", err); }
+  };
+
+  const handleBrowseFileForReindex = async () => {
+    try {
+      const res = await browseFile();
+      if (res.path) setReindexPath(res.path);
+    } catch (err) { console.error("Browse file failed", err); }
+  };
+
+
   return (
     <div className="ingest-page">
       {/* Controls Pane */}
@@ -94,9 +116,11 @@ export default function IngestPage() {
                 id="ingest-file-path"
                 type="text"
                 className="ingest-input font-mono"
-                placeholder="C:\path\to\file.mp4"
+                placeholder="Click to browse or enter path manually..."
                 value={filePath}
                 onChange={(e) => setFilePath(e.target.value)}
+                onClick={handleBrowseFileForIngest}
+                style={{ cursor: 'pointer' }}
               />
             </div>
 
@@ -133,9 +157,11 @@ export default function IngestPage() {
                 id="ingest-folder-path"
                 type="text"
                 className="ingest-input font-mono"
-                placeholder="C:\path\to\media\folder"
+                placeholder="Click to browse or enter path manually..."
                 value={folderPath}
                 onChange={(e) => setFolderPath(e.target.value)}
+                onClick={handleBrowseFolderForIngest}
+                style={{ cursor: 'pointer' }}
               />
             </div>
             <div className="ingest-field ingest-checkbox-row">
@@ -166,9 +192,11 @@ export default function IngestPage() {
                 id="ingest-reindex-path"
                 type="text"
                 className="ingest-input font-mono"
-                placeholder="C:\path\to\file"
+                placeholder="Click to browse or enter path manually..."
                 value={reindexPath}
                 onChange={(e) => setReindexPath(e.target.value)}
+                onClick={handleBrowseFileForReindex}
+                style={{ cursor: 'pointer' }}
               />
             </div>
             <div className="ingest-btn-row">
