@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { searchHybrid, searchSemantic, searchKeyword } from '../api';
+import { searchHybrid, searchSemantic, searchKeyword, getMediaServeUrl } from '../api';
+import CustomPdfViewer from '../components/CustomPdfViewer';
 import './SearchPage.css';
 
 const SEARCH_MODES = ['hybrid', 'semantic', 'keyword'];
@@ -173,22 +174,33 @@ export default function SearchPage() {
 
       {/* Right Pane: Media Inspector */}
       <div className="search-inspector">
-        <div className="search-inspector-header">
-          <div className="search-inspector-title">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>visibility</span>
-            <span>Media Inspector</span>
-          </div>
-        </div>
-        <div className="search-inspector-body">
-          {selected != null && items[selected] ? (
-            <InspectorContent item={items[selected]} />
-          ) : (
-            <div className="search-empty" style={{ padding: '40px 20px' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.15 }}>preview</span>
-              <p>Select a result to inspect</p>
+        {selected != null && items[selected] && fileIcon(items[selected].source_type, items[selected].file_name || items[selected].file_path).icon === 'picture_as_pdf' ? (
+          <CustomPdfViewer
+            fileUrl={getMediaServeUrl(items[selected].file_path)}
+            initialPage={items[selected].start != null ? Math.max(1, Math.floor(items[selected].start)) : 1}
+            timestamp={items[selected].start}
+            onClose={() => setSelected(null)}
+          />
+        ) : (
+          <>
+            <div className="search-inspector-header">
+              <div className="search-inspector-title">
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>visibility</span>
+                <span>Media Inspector</span>
+              </div>
             </div>
-          )}
-        </div>
+            <div className="search-inspector-body">
+              {selected != null && items[selected] ? (
+                <InspectorContent item={items[selected]} />
+              ) : (
+                <div className="search-empty" style={{ padding: '40px 20px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.15 }}>preview</span>
+                  <p>Select a result to inspect</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

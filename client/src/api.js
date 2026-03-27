@@ -55,6 +55,9 @@ export const getMediaDetail = (id) =>
 export const getMediaSegments = (id, limit = 200) =>
   api.get(`/media/${id}/segments?limit=${limit}`).then(unwrap);
 
+export const getMediaServeUrl = (filePath) => 
+  `/api/v1/media/serve?file_path=${encodeURIComponent(filePath)}`;
+
 // ── System ──
 export const getHealth = () =>
   api.get('/health').then(unwrap);
