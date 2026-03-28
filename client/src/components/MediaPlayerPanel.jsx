@@ -111,7 +111,6 @@ const DocumentViewer = ({ fileUrl, metadata }) => {
   };
   
   const fileType = getFileType(metadata?.path || metadata?.name, metadata?.mimeType);
-  const ext = metadata?.name?.split('.').pop().toLowerCase().trim();
   const [textContent, setTextContent] = useState('');
 
   useEffect(() => {
@@ -211,6 +210,7 @@ export default function MediaPlayerPanel({ file, onClose }) {
     // We attach it to the window but carefully scope the action via activeElement check
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, onClose]);
 
   if (!isOpen && !file) {

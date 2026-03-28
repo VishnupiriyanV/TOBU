@@ -120,7 +120,6 @@ def _handle_signal(sig, frame):
     RUNNING = False
 
 def main():
-    global RUNNING
     _preflight_checks()
     ok, msg = health_check()
     if not ok:

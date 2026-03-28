@@ -32,7 +32,7 @@ export default function useWaveform(fileUrl, canvasRef, audioRef) {
         sourceRef.current = audioCtx.createMediaElementSource(audio);
         sourceRef.current.connect(analyser);
         analyser.connect(audioCtx.destination);
-      } catch (err) {
+      } catch {
         // Already connected
       }
     }

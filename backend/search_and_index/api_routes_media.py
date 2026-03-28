@@ -61,6 +61,8 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
 async def open_media_native(payload: OpenMediaRequest):
     decoded_path = urllib.parse.unquote(payload.file_path)
     
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    watch_dir = base_dir / "watch"
     ALLOWED_BASE_DIRS = [watch_dir.resolve()] + [Path(d).resolve() for d in user_added_dirs]
     
     path_obj = Path(decoded_path)

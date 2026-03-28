@@ -42,6 +42,7 @@ export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, tim
       // If timestamp is like 1, 2, 3... it might be the page number
       // So we set the page number to match it (bounded between 1 and numPages)
       const targetPage = Math.max(1, Math.floor(timestamp));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageNumber(targetPage);
     }
   }, [timestamp]);

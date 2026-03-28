@@ -98,6 +98,8 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
 def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
+    if "semantic_segments" not in db.table_names():
+        return []
     table = db.open_table("semantic_segments")
 
     query_vector = embed([query])[0]
@@ -140,6 +142,8 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
 
 def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
+    if "summary_segments" not in db.table_names():
+        return []
     table = db.open_table("summary_segments")
     
     query_vector = embed([query])[0]

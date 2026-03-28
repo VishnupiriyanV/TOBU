@@ -25,7 +25,6 @@ def _worker_stop_flag():
     return _stop_worker
 
 def get_observer():
-    global _watcher_observer
     return _watcher_observer
 
 
@@ -66,7 +65,7 @@ async def lifespan(app: FastAPI):
         print(f"[TOBU] File watcher active on: {watch_folder}")
     except Exception as e:
         print(f"[TOBU] Warning: Could not start file watcher: {e}")
-        observer = None
+        _watcher_observer = None
 
     yield  # App is running
 

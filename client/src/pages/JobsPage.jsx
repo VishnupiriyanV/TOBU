@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getJobs, getJob, retryJob, cancelJob } from '../api';
+import { getJobs, retryJob, cancelJob } from '../api';
 import './JobsPage.css';
 
 const STATUS_FILTERS = [null, 'running', 'queued', 'done', 'failed', 'cancelled'];
@@ -65,7 +65,6 @@ export default function JobsPage() {
   const running = jobs.filter(j => j.status === 'running').length;
   const doneCount = jobs.filter(j => j.status === 'done').length;
   const failedCount = jobs.filter(j => j.status === 'failed').length;
-  const queuedCount = jobs.filter(j => j.status === 'queued').length;
   const successRate = total > 0 ? ((doneCount / total) * 100).toFixed(1) : '0.0';
 
   return (

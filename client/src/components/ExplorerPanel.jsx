@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { storeHandle, getHandle, deleteHandle, getAllHandles, verifyPermission, deleteByPathPrefix } from './workspaceDB';
+import { storeHandle, getHandle, getAllHandles, verifyPermission, deleteByPathPrefix } from './workspaceDB';
 import './ExplorerPanel.css';
 
 const FileIcon = ({ type, extension, expanded }) => {
@@ -126,17 +126,18 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
     try {
       const res = await fetch('http://127.0.0.1:8000/api/v1/system/file-tree');
       if (res.ok) { const json = await res.json(); if (json.ok && json.data) bTree = json.data; }
-    } catch (e) { console.warn("Backend tree fetch failed."); }
+    } catch { console.warn("Backend tree fetch failed."); }
     try {
       const saved = localStorage.getItem('tobu_workspace_tree');
       if (saved) lTree = JSON.parse(saved);
-    } catch (e) {}
+    } catch { /* ignore */ }
 
     setTreeData(mergeTrees(bTree, lTree));
     setLoading(false);
     checkPermissions();
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAndMergeTree(); }, []);
 
   const saveLocalTree = (treeArr) => {
@@ -153,7 +154,7 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
           setNeedsAuth(true); break;
         }
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   };
 
   const requestAllPermissions = async () => {
@@ -161,7 +162,7 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
       const handles = await getAllHandles();
       for (const h of handles) await verifyPermission(h.handle, false);
       setNeedsAuth(false);
-    } catch (e) {}
+    } catch { /* ignore */ }
   };
 
   const showToast = (msg, type='success') => {
@@ -297,7 +298,7 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
       } else {
         showToast('Failed to remove workspace. Try again.', 'error');
       }
-    } catch (err) {
+    } catch {
       showToast('Failed to remove workspace. Try again.', 'error');
     } finally {
       setShowConfirmModal(false);
