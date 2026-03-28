@@ -68,3 +68,58 @@ async def system_browse_folder():
     loop = asyncio.get_event_loop()
     path = await loop.run_in_executor(executor, _prompt_folder)
     return {"ok": True, "data": {"path": path or ""}}
+
+def _build_file_tree(dir_path: str, base_dir: str) -> list:
+    import os
+    tree = []
+    try:
+        entries = sorted(os.scandir(dir_path), key=lambda e: (not e.is_dir(), e.name.lower()))
+        for entry in entries:
+            # Skip hidden files
+            if entry.name.startswith('.'):
+                continue
+                
+            rel_path = os.path.relpath(entry.path, base_dir)
+            
+            if entry.is_dir():
+                tree.append({
+                    "id": rel_path,
+                    "name": entry.name,
+                    "type": "folder",
+                    "path": rel_path,
+                    "children": _build_file_tree(entry.path, base_dir)
+                })
+            else:
+                _, ext = os.path.splitext(entry.name)
+                tree.append({
+                    "id": rel_path,
+                    "name": entry.name,
+                    "type": "file",
+                    "path": rel_path,
+                    "extension": ext.lower()
+                })
+    except PermissionError:
+        pass
+    return tree
+
+@router.get("/system/file-tree", response_model=EnvelopeSuccess)
+async def get_system_file_tree():
+    import os
+    from .api_app import DEFAULT_WATCH_FOLDER
+    
+    if not os.path.exists(DEFAULT_WATCH_FOLDER):
+        os.makedirs(DEFAULT_WATCH_FOLDER, exist_ok=True)
+        
+    tree = _build_file_tree(DEFAULT_WATCH_FOLDER, DEFAULT_WATCH_FOLDER)
+    
+    # Wrap it in a root workspace folder if you prefer, or return the list
+    # The frontend expects a list of top level nodes.
+    root_node = {
+        "id": "root",
+        "name": "Workspace",
+        "type": "folder",
+        "path": "",
+        "children": tree
+    }
+    
+    return {"ok": True, "data": {"tree": [root_node]}}

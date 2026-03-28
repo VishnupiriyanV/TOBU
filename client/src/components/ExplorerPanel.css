@@ -1,0 +1,141 @@
+.explorer-panel {
+  width: 260px;
+  min-width: 260px;
+  background-color: #0d0d0f;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(72, 69, 82, 0.2);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+  overflow: hidden;
+  z-index: 40;
+}
+
+.explorer-panel:not(.open) {
+  margin-left: -260px;
+  visibility: hidden;
+}
+
+.explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+  min-height: 48px;
+  border-bottom: 1px solid rgba(72, 69, 82, 0.1);
+}
+
+.explorer-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #8b8b99;
+  text-transform: uppercase;
+}
+
+.explorer-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.explorer-icon-btn {
+  background: transparent;
+  border: none;
+  color: #8b8b99;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.explorer-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.explorer-icon-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.explorer-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+.explorer-loading {
+  padding: 16px;
+  color: #8b8b99;
+  font-size: 13px;
+  text-align: center;
+}
+
+.tree-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-node-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  cursor: pointer;
+  color: #c9c9d1;
+  font-size: 13px;
+  user-select: none;
+  transition: background-color 0.15s;
+  padding-right: 16px;
+  white-space: nowrap;
+}
+
+.tree-node:hover {
+  background-color: #1e1e2a;
+}
+
+.tree-node.active {
+  background-color: rgba(123, 110, 246, 0.1);
+  color: #fff;
+  border-left: 2px solid #7b6ef6;
+}
+
+.tree-node:not(.active) {
+  border-left: 2px solid transparent;
+}
+
+.tree-node-icon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  width: 16px;
+}
+
+.tree-node-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-children {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 150ms ease-in-out;
+}
+
+.tree-children.expanded {
+  grid-template-rows: 1fr;
+}
+
+.tree-children > * {
+  overflow: hidden;
+}

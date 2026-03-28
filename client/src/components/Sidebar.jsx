@@ -8,7 +8,7 @@ const navItems = [
   { to: '/system', icon: 'dashboard',           label: 'System' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onToggleExplorer, isExplorerOpen }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -18,6 +18,13 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
+        <button
+          className={`sidebar-nav-item ${isExplorerOpen ? 'sidebar-nav-item--active' : ''}`}
+          onClick={onToggleExplorer}
+          title="Explorer"
+        >
+          <span className="material-symbols-outlined">folder</span>
+        </button>
         {navItems.map(({ to, icon, label }) => (
           <NavLink
             key={to}
