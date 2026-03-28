@@ -6,8 +6,8 @@ import subprocess
 import urllib.parse
 from pathlib import Path
 from pydantic import BaseModel
-from .api_models import EnvelopeSuccess
-from . import api_service
+from backend.search_and_index.api_models import EnvelopeSuccess
+from backend.search_and_index import api_service
 
 user_added_dirs = set()
 

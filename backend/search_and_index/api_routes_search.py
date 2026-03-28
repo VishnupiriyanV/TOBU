@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 from typing import List
-from .api_models import EnvelopeSuccess, HybridSearchRequest, HybridResultItem
-from . import api_service
+from backend.search_and_index.api_models import EnvelopeSuccess, HybridSearchRequest, HybridResultItem
+from backend.search_and_index import api_service
 
 router = APIRouter(prefix="/api/v1/search", tags=["Search"])
 

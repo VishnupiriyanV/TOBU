@@ -4,15 +4,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import threading
 
-from .api_routes_system import router as system_router
-from .api_routes_jobs import router as jobs_router
-from .api_routes_search import router as search_router
-from .api_routes_ingest import router as ingest_router
-from .api_routes_media import router as media_router
+from backend.search_and_index.api_routes_system import router as system_router
+from backend.search_and_index.api_routes_jobs import router as jobs_router
+from backend.search_and_index.api_routes_search import router as search_router
+from backend.search_and_index.api_routes_ingest import router as ingest_router
+from backend.search_and_index.api_routes_media import router as media_router
 import os
 
-MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+
+if getattr(sys, 'frozen', False):
+    # Running in a PyInstaller bundle
+    PROJECT_ROOT = os.path.dirname(sys.executable)
+else:
+    # Running in a normal Python environment
+    MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+
 DEFAULT_WATCH_FOLDER = os.environ.get(
     "TOBU_WATCH_FOLDER",
     os.path.join(PROJECT_ROOT, "watch"),
@@ -37,9 +45,9 @@ async def lifespan(app: FastAPI):
 
     # Start the runtime worker loop in a background daemon thread
     try:
-        from . import sql_database
+        from backend.search_and_index import sql_database
         sql_database.initialize_db()
-        from . import runtime_service
+        from backend.search_and_index import runtime_service
         worker_thread = threading.Thread(
             target=runtime_service.worker_loop,
             kwargs={"poll_interval": 1.0, "stop_flag": _worker_stop_flag},
@@ -53,7 +61,7 @@ async def lifespan(app: FastAPI):
         print("[TOBU] API server running without auto-processing (install dependencies to enable)")
 
     try:
-        from .watch import FileHandler, initial_scan
+        from backend.search_and_index.watch import FileHandler, initial_scan
         from watchdog.observers import Observer
 
         watch_folder = DEFAULT_WATCH_FOLDER
@@ -124,5 +132,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -7,8 +7,8 @@ import json
 import torch
 
 if __package__:
-    from .semantic_engine import VECTOR_DB_PATH
-    from .model_downloader import MODEL_VISUAL_PATH
+    from backend.search_and_index.semantic_engine import VECTOR_DB_PATH
+    from backend.search_and_index.model_downloader import MODEL_VISUAL_PATH
 else:
     from semantic_engine import VECTOR_DB_PATH
     from model_downloader import MODEL_VISUAL_PATH
@@ -16,7 +16,11 @@ else:
 INTERVAL_SECONDS = 2  # extract one frame every  seconds
 BATCH_SIZE = 50 #50 frames cap for storing before saving in the DB
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+if getattr(sys, 'frozen', False):
+    PROJECT_ROOT = os.path.dirname(sys.executable)
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 THUMBNAIL_PATH = os.path.join(PROJECT_ROOT, "data", "thumbnails")
 THUMBNAIL_MAX_SIZE= (320,320)
 THUMBNAIL_QUALITY = 80

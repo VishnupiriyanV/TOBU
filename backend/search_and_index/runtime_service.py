@@ -4,10 +4,10 @@ import sqlite3
 import time
 
 if __package__:
-    from .aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
-    from .document_engine import process_pdf, process_file
-    from .semantic_engine import save_to_vector_db, save_summary_vector, semantic_search
-    from .sql_database import (
+    from backend.search_and_index.aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
+    from backend.search_and_index.document_engine import process_pdf, process_file
+    from backend.search_and_index.semantic_engine import save_to_vector_db, save_summary_vector, semantic_search
+    from backend.search_and_index.sql_database import (
         DATABASE_PATH,
         fetch_next_job,
         get_job_retries,
@@ -19,8 +19,8 @@ if __package__:
         should_process,
         update_job_status,
     )
-    from .summarizer import summary_generator
-    from .visual_engine import index_video_visually
+    from backend.search_and_index.summarizer import summary_generator
+    from backend.search_and_index.visual_engine import index_video_visually
 else:
     from aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
     from document_engine import process_pdf, process_file

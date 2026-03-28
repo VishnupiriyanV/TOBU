@@ -3,9 +3,9 @@ import fitz
 import frontmatter
 
 if __package__:
-    from .semantic_engine import save_to_vector_db, save_summary_vector
-    from .summarizer import summary_generator
-    from .sql_database import save_doc_to_db
+    from backend.search_and_index.semantic_engine import save_to_vector_db, save_summary_vector
+    from backend.search_and_index.summarizer import summary_generator
+    from backend.search_and_index.sql_database import save_doc_to_db
 else:
     from semantic_engine import save_to_vector_db, save_summary_vector
     from summarizer import summary_generator

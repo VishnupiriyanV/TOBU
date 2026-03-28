@@ -3,6 +3,15 @@ tempfile
 *.mp4
 *.wav
 __pycache__
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ipynb_checkpoints/
 data
 models
 *.pdf
@@ -10,6 +19,10 @@ models
 *.db
 test.md
 *.png
+/build/
+/desktop/release/
+/desktop/win-unpacked/
+/desktop/*.log
 #frontend 
 node_modules/
 .pnp

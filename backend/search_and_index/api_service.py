@@ -2,14 +2,14 @@ from typing import List, Optional, Dict, Any
 import os
 
 if __package__:
-    from . import sql_database
+    from backend.search_and_index import sql_database
 else:
     import sql_database
 
 
 def _get_runtime_service():
     if __package__:
-        from . import runtime_service as _runtime_service
+        from backend.search_and_index import runtime_service as _runtime_service
     else:
         import runtime_service as _runtime_service
     return _runtime_service
@@ -17,7 +17,7 @@ def _get_runtime_service():
 
 def _get_raw_semantic_search():
     if __package__:
-        from .semantic_engine import semantic_search as _raw_semantic_search
+        from backend.search_and_index.semantic_engine import semantic_search as _raw_semantic_search
     else:
         from semantic_engine import semantic_search as _raw_semantic_search
     return _raw_semantic_search

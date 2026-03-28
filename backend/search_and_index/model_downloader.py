@@ -11,7 +11,11 @@ SUMMARIZER_MODEL = "sshleifer/distilbart-cnn-6-6"
 
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+if getattr(sys, 'frozen', False):
+    PROJECT_ROOT = os.path.dirname(sys.executable)
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
 os.makedirs(MODEL_DIR, exist_ok=True)
 

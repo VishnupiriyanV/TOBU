@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .api_models import EnvelopeSuccess, EnvelopeError, ErrorBody
-from . import api_service
+from backend.search_and_index.api_models import EnvelopeSuccess, EnvelopeError, ErrorBody
+from backend.search_and_index import api_service
 
 executor = ThreadPoolExecutor(max_workers=1)
 
@@ -108,7 +108,7 @@ def _build_file_tree(dir_path: str, base_dir: str) -> list:
 @router.get("/system/file-tree", response_model=EnvelopeSuccess)
 async def get_system_file_tree():
     import os
-    from .api_app import DEFAULT_WATCH_FOLDER
+    from backend.search_and_index.api_app import DEFAULT_WATCH_FOLDER
     
     if not os.path.exists(DEFAULT_WATCH_FOLDER):
         os.makedirs(DEFAULT_WATCH_FOLDER, exist_ok=True)
@@ -136,11 +136,11 @@ async def delete_workspace_folder(payload: dict):
     normalized = os.path.abspath(folder_path)
     
     # Do cleanup in backend.
-    from . import sql_database
+    from backend.search_and_index import sql_database
     deleted_stats = sql_database.remove_workspace_folder(normalized)
     
     # If the backend is watching this folder, unwatch it.
-    from .api_app import get_observer
+    from backend.search_and_index.api_app import get_observer
     observer = get_observer()
     if observer:
         for watch in getattr(observer, 'watches', []):
@@ -150,7 +150,7 @@ async def delete_workspace_folder(payload: dict):
                 
     # Remove from allowed dirs in media
     try:
-        from .api_routes_media import user_added_dirs
+        from backend.search_and_index.api_routes_media import user_added_dirs
         str_norm = str(Path(normalized).resolve())
         if str_norm in user_added_dirs:
             user_added_dirs.remove(str_norm)
@@ -175,7 +175,7 @@ async def cancel_indexing(payload: dict):
     folder_path = payload.get("folder_path")
     if not folder_path:
         return {"success": False}
-    from . import sql_database
+    from backend.search_and_index import sql_database
     import os
     normalized = os.path.abspath(folder_path)
     prefix = normalized + os.sep

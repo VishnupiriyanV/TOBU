@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 
 if __package__:
-    from .model_downloader import MODEL_SUMMARIZER_PATH
+    from backend.search_and_index.model_downloader import MODEL_SUMMARIZER_PATH
 else:
     from model_downloader import MODEL_SUMMARIZER_PATH
 

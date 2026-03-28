@@ -6,12 +6,16 @@ import pandas as pd
 import os
 
 if __package__:
-    from .model_downloader import MODEL_SEMANTIC_PATH
+    from backend.search_and_index.model_downloader import MODEL_SEMANTIC_PATH
 else:
     from model_downloader import MODEL_SEMANTIC_PATH
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+if getattr(sys, 'frozen', False):
+    PROJECT_ROOT = os.path.dirname(sys.executable)
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 VECTOR_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "vector_data")
 
 # Load model in offline mode

@@ -1,8 +1,8 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 if __package__:
-    from .sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
-    from .runtime_service import worker_loop
+    from backend.search_and_index.sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
+    from backend.search_and_index.runtime_service import worker_loop
 else:
     from sql_database import initialize_db, delete_file_records, enqueue_job, cancel_jobs_for_path
     from runtime_service import worker_loop
