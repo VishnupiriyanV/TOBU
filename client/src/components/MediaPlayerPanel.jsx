@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useWaveform from './useWaveform';
 import './MediaPlayerPanel.css';
 
-const getFileUrl = (path) => {
-  return `http://127.0.0.1:8000/api/v1/media/serve?file_path=${encodeURIComponent(path)}`;
+const getFileUrl = (node) => {
+  if (!node) return null;
+  if (node.source === 'backend' || !node.source) {
+    return `http://127.0.0.1:8000/api/v1/media/serve?file_path=${encodeURIComponent(node.path)}`;
+  }
+  if (node.fileBlob) {
+    return URL.createObjectURL(node.fileBlob);
+  }
+  return null;
 };
 
 const VideoPlayer = ({ fileUrl }) => {
   return (
     <div className="media-video-container">
-      <video className="media-video" controls src={fileUrl} />
+      <video className="media-video" controls src={fileUrl || undefined} />
       <div className="scanline-overlay"></div>
     </div>
   );
@@ -17,35 +25,9 @@ const VideoPlayer = ({ fileUrl }) => {
 const AudioPlayer = ({ fileUrl, metadata }) => {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
-
-  useEffect(() => {
-    // Simple mock waveform animation for the canvas
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationId;
-    
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#7b6ef6';
-      
-      const barWidth = Math.max(2, canvas.width / 50);
-      const gap = 2;
-      const numBars = Math.floor(canvas.width / (barWidth + gap));
-      
-      for (let i = 0; i < numBars; i++) {
-        const height = Math.random() * canvas.height * 0.8;
-        ctx.fillRect(i * (barWidth + gap), canvas.height - height, barWidth, height);
-      }
-      
-      animationId = requestAnimationFrame(() => {
-        setTimeout(draw, 100); // Throttle random heights for visual stability
-      });
-    };
-    
-    draw();
-    return () => cancelAnimationFrame(animationId);
-  }, [fileUrl]);
+  
+  // Use Web Audio API hook
+  useWaveform(fileUrl, canvasRef, audioRef);
 
   return (
     <div className="media-audio-container">
@@ -58,7 +40,7 @@ const AudioPlayer = ({ fileUrl, metadata }) => {
         <div className="audio-artist">Unknown Artist</div>
       </div>
       <canvas ref={canvasRef} className="audio-waveform" width="300" height="80" />
-      <audio className="media-audio" controls src={fileUrl} ref={audioRef} />
+      <audio className="media-audio" controls src={fileUrl || undefined} ref={audioRef} />
     </div>
   );
 };
@@ -97,7 +79,7 @@ const ImageViewer = ({ fileUrl, metadata }) => {
            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       >
         <img 
-          src={fileUrl} 
+          src={fileUrl || undefined} 
           alt={metadata?.name} 
           style={{ 
             transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
@@ -124,16 +106,22 @@ const DocumentViewer = ({ fileUrl, metadata }) => {
   const [textContent, setTextContent] = useState('');
 
   useEffect(() => {
-    if (ext === '.txt' || ext === '.md') {
-      fetch(fileUrl)
-        .then(res => res.text())
-        .then(setTextContent)
-        .catch(console.error);
+    if ((ext === '.txt' || ext === '.md') && fileUrl) {
+      if (metadata.source === 'localFile' || metadata.source === 'localHandle') {
+         if (metadata.fileBlob) {
+            metadata.fileBlob.text().then(setTextContent).catch(console.error);
+         }
+      } else {
+        fetch(fileUrl)
+          .then(res => res.text())
+          .then(setTextContent)
+          .catch(console.error);
+      }
     }
-  }, [fileUrl, ext]);
+  }, [fileUrl, ext, metadata]);
 
   if (ext === '.pdf') {
-    return <iframe className="media-document-pdf" src={fileUrl} title={metadata?.name} />;
+    return <iframe className="media-document-pdf" src={fileUrl || undefined} title={metadata?.name} />;
   }
 
   if (ext === '.txt' || ext === '.md') {
@@ -149,44 +137,84 @@ const DocumentViewer = ({ fileUrl, metadata }) => {
 
 export default function MediaPlayerPanel({ file, onClose }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [url, setUrl] = useState(null);
+  const panelRef = useRef(null);
 
   useEffect(() => {
     if (file) {
       setIsOpen(true);
+      const newUrl = getFileUrl(file);
+      setUrl(newUrl);
+      
+      return () => {
+        if (newUrl && newUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(newUrl);
+        }
+      };
     } else {
       setIsOpen(false);
+      setUrl(null);
     }
   }, [file]);
 
   const handleKeyDown = (e) => {
+    // Only handle if active element is NOT an input or textarea
+    const activeTag = document.activeElement?.tagName?.toLowerCase();
+    if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+      return; 
+    }
+
     if (!isOpen) return;
+
     if (e.key === 'Escape') {
       if (onClose) onClose();
+    } else if (e.key === ' ') {
+      // Space for play/pause if there's a video/audio
+      const mediaEl = panelRef.current?.querySelector('video, audio');
+      if (mediaEl && document.activeElement !== mediaEl) {
+        e.preventDefault();
+        if (mediaEl.paused) mediaEl.play();
+        else mediaEl.pause();
+      }
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const mediaEl = panelRef.current?.querySelector('video, audio');
+      if (mediaEl && document.activeElement !== mediaEl) {
+        e.preventDefault();
+        mediaEl.currentTime += (e.key === 'ArrowRight' ? 5 : -5);
+      }
     }
   };
 
   useEffect(() => {
+    // We attach it to the window but carefully scope the action via activeElement check
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
   if (!isOpen && !file) {
-    return null; // Don't render if permanently closed
+    return null;
   }
 
   const renderContent = () => {
     if (!file) return <div className="media-empty">No file selected</div>;
+    if (!url) {
+       // Awaiting Blob / Permission
+       return <div className="media-empty">Accessing file...</div>;
+    }
     
-    const ext = file.extension?.toLowerCase();
-    const url = getFileUrl(file.path);
+    // Attempt guess extension if missing
+    let ext = file.extension?.toLowerCase();
+    if (!ext && file.name.includes('.')) {
+        ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    }
 
     if (['.mp4', '.mov', '.mkv', '.webm', '.avi'].includes(ext)) {
       return <VideoPlayer fileUrl={url} metadata={file} />;
-    } else if (['.mp3', '.wav', '.flac', '.ogg'].includes(ext)) {
+    } else if (['.mp3', '.wav', '.flac', '.ogg', '.aac'].includes(ext)) {
       return <AudioPlayer fileUrl={url} metadata={file} />;
-    } else if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+    } else if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(ext)) {
       return <ImageViewer fileUrl={url} metadata={file} />;
-    } else if (['.pdf', '.txt', '.md', '.docx'].includes(ext)) {
+    } else if (['.pdf', '.txt', '.md', '.docx', '.csv'].includes(ext)) {
       return <DocumentViewer fileUrl={url} metadata={file} />;
     } else {
       return <div className="media-empty">Unsupported file format: {ext}</div>;
@@ -194,7 +222,7 @@ export default function MediaPlayerPanel({ file, onClose }) {
   };
 
   return (
-    <div className={`media-player-panel ${isOpen ? 'open' : ''}`}>
+    <div className={`media-player-panel ${isOpen ? 'open' : ''}`} ref={panelRef} tabIndex="-1">
       <div className="media-header">
         <span className="media-title">MEDIA INSPECTOR</span>
         <div className="media-filename" title={file?.name}>{file?.name || ''}</div>
@@ -211,7 +239,7 @@ export default function MediaPlayerPanel({ file, onClose }) {
              <span className="material-symbols-outlined">fullscreen</span>
            </button>
            <button className="media-icon-btn" title="Download">
-             <a href={file ? getFileUrl(file.path) : '#'} download style={{ color: 'inherit', display: 'flex' }}>
+             <a href={url || '#'} download={file?.name || 'download'} style={{ color: 'inherit', display: 'flex' }}>
                <span className="material-symbols-outlined">download</span>
              </a>
            </button>

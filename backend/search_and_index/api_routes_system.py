@@ -71,32 +71,35 @@ async def system_browse_folder():
 
 def _build_file_tree(dir_path: str, base_dir: str) -> list:
     import os
+    import mimetypes
+    from datetime import datetime, timezone
     tree = []
     try:
         entries = sorted(os.scandir(dir_path), key=lambda e: (not e.is_dir(), e.name.lower()))
         for entry in entries:
-            # Skip hidden files
             if entry.name.startswith('.'):
                 continue
-                
-            rel_path = os.path.relpath(entry.path, base_dir)
             
+            abs_path = os.path.abspath(entry.path).replace("\\", "/")    
             if entry.is_dir():
                 tree.append({
-                    "id": rel_path,
                     "name": entry.name,
                     "type": "folder",
-                    "path": rel_path,
+                    "path": abs_path,
                     "children": _build_file_tree(entry.path, base_dir)
                 })
             else:
-                _, ext = os.path.splitext(entry.name)
+                mime_type, _ = mimetypes.guess_type(entry.name)
+                stat = entry.stat()
+                mtime_iso = datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat()
+                
                 tree.append({
-                    "id": rel_path,
                     "name": entry.name,
                     "type": "file",
-                    "path": rel_path,
-                    "extension": ext.lower()
+                    "path": abs_path,
+                    "mimeType": mime_type or "application/octet-stream",
+                    "size": stat.st_size,
+                    "lastModified": mtime_iso.replace('+00:00', 'Z')
                 })
     except PermissionError:
         pass
@@ -111,15 +114,13 @@ async def get_system_file_tree():
         os.makedirs(DEFAULT_WATCH_FOLDER, exist_ok=True)
         
     tree = _build_file_tree(DEFAULT_WATCH_FOLDER, DEFAULT_WATCH_FOLDER)
+    abs_watch = os.path.abspath(DEFAULT_WATCH_FOLDER).replace("\\", "/")
     
-    # Wrap it in a root workspace folder if you prefer, or return the list
-    # The frontend expects a list of top level nodes.
     root_node = {
-        "id": "root",
-        "name": "Workspace",
+        "name": os.path.basename(abs_watch) or "watch",
         "type": "folder",
-        "path": "",
+        "path": abs_watch,
         "children": tree
     }
     
-    return {"ok": True, "data": {"tree": [root_node]}}
+    return {"ok": True, "data": root_node}

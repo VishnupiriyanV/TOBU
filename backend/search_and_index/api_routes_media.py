@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from .api_models import EnvelopeSuccess
 from . import api_service
 
+user_added_dirs = set()
+
 class OpenMediaRequest(BaseModel):
     file_path: str
 
@@ -22,17 +24,26 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
     base_dir = Path(__file__).resolve().parent.parent.parent
     watch_dir = base_dir / "watch"
     
+    ALLOWED_BASE_DIRS = [watch_dir.resolve()] + [Path(d).resolve() for d in user_added_dirs]
+    
     path_obj = Path(decoded_path)
     if not path_obj.is_absolute():
         path_obj = watch_dir / path_obj
         
     resolved_path = path_obj.resolve()
     
-    # Security check: must be inside the watch_dir
-    try:
-        resolved_path.relative_to(watch_dir.resolve())
-    except ValueError:
-        raise HTTPException(status_code=403, detail="Forbidden: Path must be within watch directory")
+    # Security check: must start with one of the ALLOWED_BASE_DIRS
+    is_allowed = False
+    for base in ALLOWED_BASE_DIRS:
+        try:
+            resolved_path.relative_to(base)
+            is_allowed = True
+            break
+        except ValueError:
+            continue
+            
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Forbidden: Path not in allowed directories")
         
     # File existence check
     if not resolved_path.is_file():
@@ -46,8 +57,7 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
 async def open_media_native(payload: OpenMediaRequest):
     decoded_path = urllib.parse.unquote(payload.file_path)
     
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    watch_dir = base_dir / "watch"
+    ALLOWED_BASE_DIRS = [watch_dir.resolve()] + [Path(d).resolve() for d in user_added_dirs]
     
     path_obj = Path(decoded_path)
     if not path_obj.is_absolute():
@@ -55,11 +65,17 @@ async def open_media_native(payload: OpenMediaRequest):
         
     resolved_path = path_obj.resolve()
     
-    # Security check: must be inside the watch_dir
-    try:
-        resolved_path.relative_to(watch_dir.resolve())
-    except ValueError:
-        raise HTTPException(status_code=403, detail="Forbidden: Path must be within watch directory")
+    is_allowed = False
+    for base in ALLOWED_BASE_DIRS:
+        try:
+            resolved_path.relative_to(base)
+            is_allowed = True
+            break
+        except ValueError:
+            continue
+            
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Forbidden: Path not in allowed directories")
         
     # File existence check
     if not resolved_path.is_file():
@@ -76,6 +92,17 @@ async def open_media_native(payload: OpenMediaRequest):
         raise HTTPException(status_code=500, detail=str(e))
         
     return {"ok": True, "data": {"message": "Opened successfully"}}
+
+class AllowDirRequest(BaseModel):
+    directory_path: str
+
+@router.post("/allow-dir")
+async def allow_directory(payload: AllowDirRequest):
+    p = Path(payload.directory_path).resolve()
+    if p.is_dir():
+        user_added_dirs.add(str(p))
+        return {"ok": True}
+    raise HTTPException(status_code=400, detail="Invalid directory")
 
 
 @router.get("/{media_id}", response_model=EnvelopeSuccess)
