@@ -183,12 +183,6 @@ export default function SearchPage() {
           />
         ) : (
           <>
-            <div className="search-inspector-header">
-              <div className="search-inspector-title">
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>visibility</span>
-                <span>Media Inspector</span>
-              </div>
-            </div>
             <div className="search-inspector-body">
               {selected != null && items[selected] ? (
                 <InspectorContent item={items[selected]} />
