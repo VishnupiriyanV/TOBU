@@ -151,12 +151,6 @@ export default function SearchPage() {
                   <p className="search-result-text">{item.text}</p>
                 )}
                 <div className="search-result-chips">
-                  {item.start != null && (
-                    <span className="search-chip font-mono">
-                      <span className="material-symbols-outlined" style={{ fontSize: 12 }}>schedule</span>
-                      {formatTime(item.start)}
-                    </span>
-                  )}
                   {item.matched_by?.length > 0 && (
                     <span className="search-chip font-mono">
                       {item.matched_by.join(' + ')}
