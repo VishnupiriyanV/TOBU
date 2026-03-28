@@ -102,11 +102,20 @@ const ImageViewer = ({ fileUrl, metadata }) => {
 };
 
 const DocumentViewer = ({ fileUrl, metadata }) => {
-  const ext = metadata?.extension?.toLowerCase();
+  // Use robust logic to determine type
+  const getFileType = (filePath, mimeType) => {
+    const ext = filePath?.split('.').pop().toLowerCase().trim() || '';
+    if (mimeType === 'application/pdf' || ext === 'pdf') return 'pdf';
+    if (['txt','md','csv'].includes(ext)) return 'text';
+    return 'unsupported';
+  };
+  
+  const fileType = getFileType(metadata?.path || metadata?.name, metadata?.mimeType);
+  const ext = metadata?.name?.split('.').pop().toLowerCase().trim();
   const [textContent, setTextContent] = useState('');
 
   useEffect(() => {
-    if ((ext === '.txt' || ext === '.md') && fileUrl) {
+    if (fileType === 'text' && fileUrl) {
       if (metadata.source === 'localFile' || metadata.source === 'localHandle') {
          if (metadata.fileBlob) {
             metadata.fileBlob.text().then(setTextContent).catch(console.error);
@@ -118,13 +127,26 @@ const DocumentViewer = ({ fileUrl, metadata }) => {
           .catch(console.error);
       }
     }
-  }, [fileUrl, ext, metadata]);
+  }, [fileUrl, fileType, metadata]);
 
-  if (ext === '.pdf') {
-    return <iframe className="media-document-pdf" src={fileUrl || undefined} title={metadata?.name} />;
+  if (fileType === 'pdf') {
+    return (
+      <iframe 
+        className="media-document-pdf" 
+        src={fileUrl || undefined} 
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: '600px',
+          border: 'none',
+          background: '#0e0e12'
+        }}
+        title={metadata?.name} 
+      />
+    );
   }
 
-  if (ext === '.txt' || ext === '.md') {
+  if (fileType === 'text') {
     return (
       <div className="media-document-text">
         <pre>{textContent}</pre>
@@ -198,26 +220,33 @@ export default function MediaPlayerPanel({ file, onClose }) {
   const renderContent = () => {
     if (!file) return <div className="media-empty">No file selected</div>;
     if (!url) {
-       // Awaiting Blob / Permission
        return <div className="media-empty">Accessing file...</div>;
     }
     
-    // Attempt guess extension if missing
-    let ext = file.extension?.toLowerCase();
-    if (!ext && file.name.includes('.')) {
-        ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    }
+    const getFileType = (filePath, mimeType) => {
+      const ext = filePath?.split('.').pop().toLowerCase().trim() || '';
+      if (mimeType === 'application/pdf' || ext === 'pdf') return 'pdf';
+      if (['mp4','mov','mkv','avi','webm'].includes(ext)) return 'video';
+      if (['mp3','wav','flac','ogg','aac'].includes(ext)) return 'audio';
+      if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return 'image';
+      if (['txt','md','docx','csv'].includes(ext)) return 'text';
+      return 'unsupported';
+    };
 
-    if (['.mp4', '.mov', '.mkv', '.webm', '.avi'].includes(ext)) {
+    const fileType = getFileType(file.path || file.name, file.mimeType);
+
+    if (fileType === 'pdf') {
+      return <DocumentViewer fileUrl={url} metadata={file} />;
+    } else if (fileType === 'video') {
       return <VideoPlayer fileUrl={url} metadata={file} />;
-    } else if (['.mp3', '.wav', '.flac', '.ogg', '.aac'].includes(ext)) {
+    } else if (fileType === 'audio') {
       return <AudioPlayer fileUrl={url} metadata={file} />;
-    } else if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(ext)) {
+    } else if (fileType === 'image') {
       return <ImageViewer fileUrl={url} metadata={file} />;
-    } else if (['.pdf', '.txt', '.md', '.docx', '.csv'].includes(ext)) {
+    } else if (fileType === 'text') {
       return <DocumentViewer fileUrl={url} metadata={file} />;
     } else {
-      return <div className="media-empty">Unsupported file format: {ext}</div>;
+      return <div className="media-empty">Unsupported file format</div>;
     }
   };
 

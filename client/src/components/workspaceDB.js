@@ -73,5 +73,26 @@ export const verifyPermission = async (fileHandle, readWrite = false) => {
     return true;
   }
   
-  return false;
+};
+
+export const deleteByPathPrefix = async (prefix) => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('handles', 'readwrite');
+    const store = tx.objectStore('handles');
+    const request = store.openCursor();
+
+    request.onsuccess = (e) => {
+      const cursor = e.target.result;
+      if (cursor) {
+        if (cursor.key.startsWith(prefix)) {
+          cursor.delete();
+        }
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    request.onerror = () => reject(request.error);
+  });
 };

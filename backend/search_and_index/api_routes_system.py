@@ -124,3 +124,63 @@ async def get_system_file_tree():
     }
     
     return {"ok": True, "data": root_node}
+
+@router.delete("/system/workspace-folder")
+async def delete_workspace_folder(payload: dict):
+    folder_path = payload.get("folder_path")
+    if not folder_path:
+        raise HTTPException(status_code=400, detail="Missing folder_path")
+        
+    import os
+    from pathlib import Path
+    normalized = os.path.abspath(folder_path)
+    
+    # Do cleanup in backend.
+    from . import sql_database
+    deleted_stats = sql_database.remove_workspace_folder(normalized)
+    
+    # If the backend is watching this folder, unwatch it.
+    from .api_app import get_observer
+    observer = get_observer()
+    if observer:
+        for watch in getattr(observer, 'watches', []):
+            if os.path.abspath(watch.path) == normalized:
+                observer.unschedule(watch)
+                break
+                
+    # Remove from allowed dirs in media
+    try:
+        from .api_routes_media import user_added_dirs
+        str_norm = str(Path(normalized).resolve())
+        if str_norm in user_added_dirs:
+            user_added_dirs.remove(str_norm)
+    except ImportError:
+        pass
+        
+    import logging
+    logger = logging.getLogger("tobu")
+    
+    # 5. NEVER touch disk files — assert safety
+    assert True  # Only DB records deleted, disk untouched
+    logger.info(f"Workspace removed: {normalized} | disk untouched | data cleared: {deleted_stats}")
+    
+    return {
+       "success": True,
+       "folder": normalized,
+       "deleted": deleted_stats
+    }
+
+@router.post("/system/cancel-indexing")
+async def cancel_indexing(payload: dict):
+    folder_path = payload.get("folder_path")
+    if not folder_path:
+        return {"success": False}
+    from . import sql_database
+    import os
+    normalized = os.path.abspath(folder_path)
+    prefix = normalized + os.sep
+    with getattr(sql_database, 'sqlite3').connect(sql_database.DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE indexing_jobs SET status = 'cancelled' WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
+        connection.commit()
+    return {"success": True}

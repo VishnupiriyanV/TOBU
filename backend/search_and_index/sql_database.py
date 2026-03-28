@@ -262,6 +262,66 @@ def delete_file_records(file_path):
         connection.commit()
         print(f"Removed from index: {file_path}")
 
+def remove_workspace_folder(folder_path):
+    """Safely remove app data for all files prefixed with the folder path."""
+    normalized = os.path.abspath(folder_path)
+    prefix = normalized + os.sep
+    
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT id, file_path FROM media_files WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
+        rows = cursor.fetchall()
+        
+        if not rows:
+            return {"embeddings": 0, "transcripts": 0, "index_entries": 0}
+            
+        media_ids = [r[0] for r in rows]
+        media_ids_str = ",".join(map(str, media_ids))
+        
+        cursor.execute(f"SELECT COUNT(*) FROM transcripts_fts WHERE media_id IN ({media_ids_str})")
+        transcripts_count = cursor.fetchone()[0]
+        
+        index_entries_count = len(media_ids)
+        embeddings_count = 0
+        
+        try:
+            db = lancedb.connect(VECTOR_DB_PATH)
+            for table_name in ("semantic_segments", "summary_segments", "visual_moments"):
+                if table_name in db.table_names():
+                    table = db.open_table(table_name)
+                    # For metrics, we can query it first using an index/map or estimate. In LanceDB, count is not always O(1).
+                    try:
+                       res = table.search().where(f"media_id IN ({media_ids_str})")
+                       if hasattr(res, 'to_arrow'):
+                         embeddings_count += len(res.to_arrow())
+                    except Exception:
+                       pass # Fallback if search fails
+                    table.delete(f"media_id IN ({media_ids_str})")
+        except Exception as e:
+            print(f"Vector cleanup error for {folder_path}: {e}")
+            
+        if os.path.isdir(THUMBNAIL_PATH):
+            for m_id in media_ids:
+                prefix_thumb = f"{m_id}_"
+                for name in os.listdir(THUMBNAIL_PATH):
+                    if name.startswith(prefix_thumb):
+                        try:
+                            os.remove(os.path.join(THUMBNAIL_PATH, name))
+                        except Exception:
+                            pass
+                            
+        cursor.execute(f"DELETE FROM transcripts_fts WHERE media_id IN ({media_ids_str})")
+        cursor.execute(f"DELETE FROM media_files WHERE id IN ({media_ids_str})")
+        
+        cursor.execute("UPDATE indexing_jobs SET status = 'cancelled' WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
+        connection.commit()
+        
+        return {
+            "embeddings": embeddings_count,
+            "transcripts": transcripts_count,
+            "index_entries": index_entries_count
+        }
+
 def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None, current_hash=None):
     return save_to_db(
         file_path,

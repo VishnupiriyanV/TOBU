@@ -19,17 +19,22 @@ DEFAULT_WATCH_FOLDER = os.environ.get(
 )
 
 _stop_worker = False
-
+_watcher_observer = None
 
 def _worker_stop_flag():
     return _stop_worker
 
+def get_observer():
+    global _watcher_observer
+    return _watcher_observer
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _stop_worker
+    global _stop_worker, _watcher_observer
     _stop_worker = False
     worker_thread = None
+    _watcher_observer = None
 
     # Start the runtime worker loop in a background daemon thread
     try:
@@ -54,9 +59,9 @@ async def lifespan(app: FastAPI):
 
         watch_folder = DEFAULT_WATCH_FOLDER
         os.makedirs(watch_folder, exist_ok=True)
-        observer = Observer()
-        observer.schedule(FileHandler(), watch_folder, recursive=True)
-        observer.start()
+        _watcher_observer = Observer()
+        _watcher_observer.schedule(FileHandler(), watch_folder, recursive=True)
+        _watcher_observer.start()
         initial_scan(watch_folder)
         print(f"[TOBU] File watcher active on: {watch_folder}")
     except Exception as e:
@@ -66,9 +71,9 @@ async def lifespan(app: FastAPI):
     yield  # App is running
 
     # Shutdown: signal the worker to stop
-    if observer:
-        observer.stop()
-        observer.join(timeout=5)
+    if _watcher_observer:
+        _watcher_observer.stop()
+        _watcher_observer.join(timeout=5)
     _stop_worker = True
     if worker_thread and worker_thread.is_alive():
         worker_thread.join(timeout=5)

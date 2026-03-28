@@ -50,7 +50,11 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
         raise HTTPException(status_code=404, detail=f"File not found: {resolved_path}")
         
     media_type = "application/pdf" if resolved_path.suffix.lower() == ".pdf" else None
-    return FileResponse(resolved_path, media_type=media_type)
+    headers = {}
+    if media_type == "application/pdf":
+        headers["Content-Disposition"] = f'inline; filename="{resolved_path.name}"'
+        
+    return FileResponse(resolved_path, media_type=media_type, headers=headers)
 
 
 @router.post("/open", response_model=EnvelopeSuccess)

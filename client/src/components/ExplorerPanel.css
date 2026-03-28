@@ -208,3 +208,68 @@
 .context-menu button:hover {
   background: #2a2a36;
 }
+
+.explorer-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.explorer-modal {
+  background: #13131a;
+  border: 1px solid rgba(72, 69, 82, 0.5);
+  border-radius: 8px;
+  width: 380px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.explorer-modal-title {
+  color: #e0e0f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.explorer-modal-body {
+  color: #a0a0b0;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+.explorer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.explorer-modal-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #2a2a36;
+  color: #e0e0f0;
+}
+.explorer-modal-actions button.danger {
+  background: #e05555;
+  color: #fff;
+}
+.explorer-modal-actions button:hover {
+  opacity: 0.9;
+}
+.explorer-toast-notification {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: #1a1a24;
+  color: #e0e0f0;
+  padding: 12px 24px;
+  border-radius: 4px;
+  border-left: 3px solid #66cc66;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+  font-size: 13px;
+}
