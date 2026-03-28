@@ -12,8 +12,17 @@ export default function Sidebar({ onToggleExplorer, isExplorerOpen }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-logo-box">
-          <span className="sidebar-logo-letter">T</span>
+        <div className="sidebar-logo-box" style={{ background: 'transparent', border: 'none', padding: 0 }}>
+          <img
+            src="/logo.svg"
+            alt="TOBU"
+            style={{
+              width: '32px',
+              height: '32px',
+              objectFit: 'contain',
+              display: 'block'
+            }}
+          />
         </div>
       </div>
 
