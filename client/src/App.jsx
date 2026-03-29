@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import SearchPage from './pages/SearchPage';
 import JobsPage from './pages/JobsPage';
@@ -33,7 +33,7 @@ function App() {
   if (loading) return <div className="app-loader">Loading TOBU...</div>;
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
       <Routes>
         <Route element={<Layout />}>
@@ -43,7 +43,7 @@ function App() {
           <Route path="/system" element={<SystemPage />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

@@ -15,7 +15,9 @@ import sys
 
 if getattr(sys, 'frozen', False):
     # Running in a PyInstaller bundle
-    PROJECT_ROOT = os.path.dirname(sys.executable)
+    import os
+    PROJECT_ROOT = os.path.expanduser("~/.tobu")
+    os.makedirs(PROJECT_ROOT, exist_ok=True)
 else:
     # Running in a normal Python environment
     MODULE_DIR = os.path.dirname(os.path.abspath(__file__))

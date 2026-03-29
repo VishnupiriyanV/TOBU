@@ -13,7 +13,9 @@ else:
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 import sys
 if getattr(sys, 'frozen', False):
-    PROJECT_ROOT = os.path.dirname(sys.executable)
+    import os
+    PROJECT_ROOT = os.path.expanduser("~/.tobu")
+    os.makedirs(PROJECT_ROOT, exist_ok=True)
 else:
     PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 VECTOR_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "vector_data")
