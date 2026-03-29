@@ -168,10 +168,10 @@ export default function SearchPage() {
 
       {/* Right Pane: Media Inspector */}
       <div className="search-inspector">
-        {selected != null && items[selected] && fileIcon(items[selected].source_type, items[selected].file_name || items[selected].file_path).icon === 'picture_as_pdf' ? (
+        {selected != null && items[selected]?.file_path && fileIcon(items[selected].source_type, items[selected].file_name || items[selected].file_path).icon === 'picture_as_pdf' ? (
           <CustomPdfViewer
             fileUrl={getMediaServeUrl(items[selected].file_path)}
-            initialPage={items[selected].start != null ? Math.max(1, Math.floor(items[selected].start)) : 1}
+            initialPage={items[selected]?.start && !isNaN(Number(items[selected].start)) ? Math.max(1, Math.floor(Number(items[selected].start))) : 1}
             timestamp={items[selected].start}
             onClose={() => setSelected(null)}
           />

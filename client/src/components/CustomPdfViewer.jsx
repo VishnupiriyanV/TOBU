@@ -6,10 +6,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // Configure the worker explicitly for react-pdf to work seamlessly in Vite
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 export default function CustomPdfViewer({ fileUrl, onClose, initialPage = 1, timestamp = null }) {
   const [numPages, setNumPages] = useState(null);
