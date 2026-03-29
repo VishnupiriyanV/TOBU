@@ -204,6 +204,7 @@ async def get_models_status():
         "semantic": os.path.exists(model_downloader.MODEL_SEMANTIC_PATH),
         "visual": os.path.exists(model_downloader.MODEL_VISUAL_PATH),
         "summarizer": os.path.exists(model_downloader.MODEL_SUMMARIZER_PATH),
+        "whisper": os.path.exists(model_downloader.MODEL_WHISPER_PATH),
     }
     return {"ok": True, "data": status}
 

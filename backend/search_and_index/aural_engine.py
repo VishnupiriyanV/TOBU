@@ -15,6 +15,11 @@ else:
 TEMP_DIR = os.path.join(PROJECT_ROOT, "data", "temp")
 
 
+if __package__:
+    from backend.search_and_index.model_downloader import MODEL_WHISPER_PATH
+else:
+    from model_downloader import MODEL_WHISPER_PATH
+
 if torch.cuda.is_available():
     device = "cuda"
     compute = "int8"
@@ -22,7 +27,15 @@ else:
     device = "cpu"
     compute = "int8"
 
-WHISPER_MODEL = WhisperModel("distil-large-v3", device=device, compute_type=compute)
+_whisper_model = None
+
+def get_whisper_model():
+    global _whisper_model
+    if _whisper_model is None:
+        if not os.path.exists(MODEL_WHISPER_PATH):
+            raise RuntimeError(f"Whisper model not found at {MODEL_WHISPER_PATH}. Please run onboarding.")
+        _whisper_model = WhisperModel(MODEL_WHISPER_PATH, device=device, compute_type=compute, local_files_only=True)
+    return _whisper_model
 
 
 
@@ -58,7 +71,7 @@ def transcribe_audio(input_path, output_path=None):
     
     
 
-    segments, info = WHISPER_MODEL.transcribe(input_path, beam_size=5,vad_filter=True)
+    segments, info = get_whisper_model().transcribe(input_path, beam_size=5,vad_filter=True)
     
     transcript = []
     for segment in segments:

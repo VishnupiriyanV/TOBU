@@ -70,7 +70,7 @@ function startBackend(callback) {
   const maxAttempts = 30; // 30 seconds
   const pollInterval = setInterval(() => {
     attempts++;
-    http.get(`http://127.0.0.1:${backendPort}/api/system/health`, (res) => {
+    http.get(`http://127.0.0.1:${backendPort}/api/v1/health`, (res) => {
       if (res.statusCode === 200) {
         clearInterval(pollInterval);
         console.log("Backend is ready!");

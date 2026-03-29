@@ -21,8 +21,8 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
     # 1. Decode URL safely
     decoded_path = urllib.parse.unquote(file_path)
     
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    watch_dir = base_dir / "watch"
+    from backend.search_and_index.api_app import DEFAULT_WATCH_FOLDER
+    watch_dir = Path(DEFAULT_WATCH_FOLDER).resolve()
     
     ALLOWED_BASE_DIRS = [watch_dir.resolve()] + [Path(d).resolve() for d in user_added_dirs]
     
@@ -61,8 +61,8 @@ async def serve_file(file_path: str = Query(..., description="Absolute or relati
 async def open_media_native(payload: OpenMediaRequest):
     decoded_path = urllib.parse.unquote(payload.file_path)
     
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    watch_dir = base_dir / "watch"
+    from backend.search_and_index.api_app import DEFAULT_WATCH_FOLDER
+    watch_dir = Path(DEFAULT_WATCH_FOLDER).resolve()
     ALLOWED_BASE_DIRS = [watch_dir.resolve()] + [Path(d).resolve() for d in user_added_dirs]
     
     path_obj = Path(decoded_path)

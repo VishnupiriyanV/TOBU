@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { searchHybrid, searchSemantic, searchKeyword, getMediaServeUrl } from '../api';
+import { searchHybrid, searchSemantic, searchKeyword, getMediaServeUrl, openMediaNative } from '../api';
 import CustomPdfViewer from '../components/CustomPdfViewer';
 import './SearchPage.css';
 
@@ -132,6 +132,9 @@ export default function SearchPage() {
           {items.map((item, idx) => {
             const fi = fileIcon(item.source_type, item.file_name || item.file_path);
             const isSelected = selected === idx;
+            const isPdf = fi.icon === 'picture_as_pdf';
+            const isVideo = fi.icon === 'video_library';
+
             return (
               <div
                 key={idx}
@@ -143,10 +146,38 @@ export default function SearchPage() {
                     <span className="material-symbols-outlined" style={{ color: fi.color }}>{fi.icon}</span>
                     <h3>{item.file_name || item.file_path.split(/[/\\]/).pop()}</h3>
                   </div>
-                  <span className="search-result-score font-mono">
-                    Match Score: {item.score?.toFixed(2)}
-                  </span>
+                  <div className="search-result-meta-right">
+                    <button 
+                      className="icon-btn-small" 
+                      title="Open Source File"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openMediaNative(item.file_path);
+                      }}
+                    >
+                      <span className="material-symbols-outlined">open_in_new</span>
+                    </button>
+                    <span className="search-result-score font-mono">
+                      {item.score?.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
+                
+                <div className="search-result-grounding">
+                  {isVideo && item.start != null && (
+                    <span className="grounding-link">
+                      <span className="material-symbols-outlined">schedule</span>
+                      {formatTime(item.start)}
+                    </span>
+                  )}
+                  {isPdf && item.start != null && (
+                    <span className="grounding-link">
+                      <span className="material-symbols-outlined">find_in_page</span>
+                      Page {Math.floor(item.start)}
+                    </span>
+                  )}
+                </div>
+
                 {item.text && (
                   <p className="search-result-text">{item.text}</p>
                 )}

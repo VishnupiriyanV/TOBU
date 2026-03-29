@@ -3,7 +3,7 @@ import './Onboarding.css';
 
 const Onboarding = ({ onComplete }) => {
   const [step, setStep] = useState(1);
-  const [modelStatus, setModelStatus] = useState({ semantic: false, visual: false, summarizer: false });
+  const [modelStatus, setModelStatus] = useState({ semantic: false, visual: false, summarizer: false, whisper: false });
   const [isDownloading, setIsDownloading] = useState(false);
   const [watchFolder, setWatchFolder] = useState('');
 
@@ -59,7 +59,7 @@ const Onboarding = ({ onComplete }) => {
     }
   };
 
-  const allModelsReady = modelStatus.semantic && modelStatus.visual && modelStatus.summarizer;
+  const allModelsReady = modelStatus.semantic && modelStatus.visual && modelStatus.summarizer && modelStatus.whisper;
 
   return (
     <div className="onboarding-overlay">
@@ -110,6 +110,10 @@ const Onboarding = ({ onComplete }) => {
               <div className={`model-item ${modelStatus.summarizer ? 'ready' : 'missing'}`}>
                 <span>Summarization Model</span>
                 <span className="status">{modelStatus.summarizer ? 'Ready' : 'Missing'}</span>
+              </div>
+              <div className={`model-item ${modelStatus.whisper ? 'ready' : 'missing'}`}>
+                <span>Aural Model (Whisper)</span>
+                <span className="status">{modelStatus.whisper ? 'Ready' : 'Missing'}</span>
               </div>
             </div>
 

@@ -16,7 +16,11 @@ def main():
         "fastapi",
         "chromadb",
         "sqlite3",
-        "sentence_transformers"
+        "sentence_transformers",
+        "faster_whisper",
+        "torch",
+        "lancedb",
+        "python-multipart"
     ]
 
     args = [
