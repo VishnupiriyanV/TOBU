@@ -25,8 +25,8 @@ def _get_raw_semantic_search():
 #converts to api standard 
 def normalize_result_item(item: Dict[Any, Any]) -> Dict[str, Any]:
     return {
-        "file_name": item.get("file_name") or item.get("file-name"),
-        "file_path": item.get("file_path") or item.get("file-path"),
+        "file_name": item.get("file_name"),
+        "file_path": item.get("file_path"),
         "start": item.get("start"),
         "end": item.get("end"),
         "text": item.get("text"),

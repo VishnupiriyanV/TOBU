@@ -1,0 +1,49 @@
+{
+  "name": "tobu",
+  "version": "1.0.0",
+  "description": "TOBU Desktop Application",
+  "main": "desktop/main.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development concurrently \"npm run dev:client\" \"npm run start:electron\"",
+    "dev:client": "cd client && npm run dev",
+    "start:electron": "wait-on http://localhost:5173 && electron .",
+    "build:electron": "electron-builder"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.tobu.desktop",
+    "productName": "TOBU",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "package.json",
+      "desktop/**/*",
+      "client/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/fastapi-server",
+        "to": "dist/fastapi-server",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

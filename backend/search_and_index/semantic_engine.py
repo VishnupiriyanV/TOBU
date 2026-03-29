@@ -122,8 +122,8 @@ def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
     formatted_results = []
     for _, r in results.iterrows():
         formatted_results.append({
-            "file-name": r["file_name"],
-            "file-path": r["file_path"],
+            "file_name": r["file_name"],
+            "file_path": r["file_path"],
             "start": r["start"],
             "end": r.get("end", r["start"]), 
             "text": r["text"],

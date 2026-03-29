@@ -162,7 +162,7 @@ def worker_loop(poll_interval=1.0, stop_flag=None):
 
 
 def _result_key(item):
-    file_path = os.path.abspath(item.get("file-path", ""))
+    file_path = os.path.abspath(item.get("file_path", ""))
     start = item.get("start")
     end = item.get("end")
     text = (item.get("text") or "").strip()
@@ -224,7 +224,7 @@ def _passes_filters(item, source_types, folder_prefixes, date_from_dt, date_to_d
             return False
 
     if folder_prefixes:
-        p = os.path.abspath(item.get("file-path", ""))
+        p = os.path.abspath(item.get("file_path", ""))
         if not any(p.startswith(prefix) for prefix in folder_prefixes):
             return False
 
@@ -263,14 +263,14 @@ def hybrid_search_rrf(
         key = _result_key(item)
         if key not in payload:
             payload[key] = {
-                "file-name": item.get("file-name"),
-                "file-path": os.path.abspath(item.get("file-path", "")),
+                "file_name": item.get("file_name"),
+                "file_path": os.path.abspath(item.get("file_path", "")),
                 "start": item.get("start"),
                 "end": item.get("end"),
                 "text": item.get("text"),
             }
 
-    meta_map = _load_meta_by_paths([v["file-path"] for v in payload.values()])
+    meta_map = _load_meta_by_paths([v["file_path"] for v in payload.values()])
 
     normalized_source_types = set((s or "").lower() for s in (source_types or []))
     normalized_folders = [os.path.abspath(f) for f in (folders or [])]
@@ -280,7 +280,7 @@ def hybrid_search_rrf(
     merged = []
     for key, base in payload.items():
         source_ranks = ranks.get(key, {})
-        meta = meta_map.get(base["file-path"], {})
+        meta = meta_map.get(base["file_path"], {})
 
         row = {
             **base,

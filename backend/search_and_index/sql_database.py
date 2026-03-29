@@ -206,8 +206,8 @@ def search_to_json(query):
         results = []
         for row in rows:
             results.append({
-                "file-name": row["file_name"],
-                "file-path": os.path.abspath(row["file_path"]), 
+                "file_name": row["file_name"],
+                "file_path": os.path.abspath(row["file_path"]), 
                 "start": row["location_start"],
                 "end": row["location_end"],
                 "text": row["text"],
@@ -718,7 +718,7 @@ def set_setting(key, value):
     with sqlite3.connect(DATABASE_PATH) as connection:
         cursor = connection.cursor()
         cursor.execute(
-            "INSERT INTO app_settings (key, value) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            "INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
             (key, str(value)),
         )
         connection.commit()
