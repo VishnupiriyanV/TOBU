@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+import os
 
 if __package__:
     from backend.search_and_index.model_downloader import MODEL_SUMMARIZER_PATH
