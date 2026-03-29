@@ -7,10 +7,20 @@ else:
     from model_downloader import MODEL_SUMMARIZER_PATH
 
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_SUMMARIZER_PATH)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_SUMMARIZER_PATH)
+_tokenizer = None
+_model = None
+
+def get_summarizer():
+    global _tokenizer, _model
+    if _tokenizer is None or _model is None:
+        if not os.path.exists(MODEL_SUMMARIZER_PATH):
+            raise RuntimeError(f"Summarizer model not found at {MODEL_SUMMARIZER_PATH}. Please run onboarding.")
+        _tokenizer = AutoTokenizer.from_pretrained(MODEL_SUMMARIZER_PATH)
+        _model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_SUMMARIZER_PATH)
+    return _tokenizer, _model
 
 def summary_generator(data):
+    tokenizer, model = get_summarizer()
     if isinstance(data, str):
         chunks = data
     else:

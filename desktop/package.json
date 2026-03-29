@@ -21,7 +21,7 @@
     ],
     "extraResources": [
       {
-        "from": "../dist/tobu-engine",
+        "from": "../dist/tobu-vault-engine",
         "to": "engine",
         "filter": [
           "**/*"

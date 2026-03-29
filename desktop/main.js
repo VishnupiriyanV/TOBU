@@ -35,8 +35,8 @@ function startBackend(callback) {
   if (isDev) {
     executablePath = path.join(__dirname, '..', 'dist', 'tobu-vault-engine', 'tobu-vault-engine.exe');
   } else {
-    // Corrected path to match electron-packager output
-    executablePath = path.join(process.resourcesPath, 'tobu-vault-engine', 'tobu-vault-engine.exe');
+    // Backend is copied via extraResources to resources/engine/
+    executablePath = path.join(process.resourcesPath, 'engine', 'tobu-vault-engine.exe');
   }
 
   console.log('Starting backend at:', executablePath);
@@ -80,14 +80,24 @@ function startBackend(callback) {
       if (attempts >= maxAttempts) {
         clearInterval(pollInterval);
         console.error("Backend failed to start after 30 seconds");
+        callback(new Error('Backend failed to start after 30 seconds'));
       }
     });
   }, 1000);
 }
 
 app.on('ready', () => {
-  startBackend(() => {
-    createWindow();
+  createWindow();
+  startBackend((err) => {
+    if (err) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.executeJavaScript(
+          "console.error('TOBU backend failed to start. Check packaged resources and backend logs.');"
+        );
+      }
+      return;
+    }
+    console.log('Backend ready. UI already loaded.');
   });
 });
 

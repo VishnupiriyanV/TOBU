@@ -18,11 +18,19 @@ else:
     PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 VECTOR_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "vector_data")
 
-# Load model in offline mode
-MODEL = SentenceTransformer(
-    MODEL_SEMANTIC_PATH,
-    model_kwargs={"local_files_only": True}
-)
+# Lazy load model
+_MODEL = None
+
+def get_model():
+    global _MODEL
+    if _MODEL is None:
+        if not os.path.exists(MODEL_SEMANTIC_PATH):
+            raise RuntimeError(f"Semantic model not found at {MODEL_SEMANTIC_PATH}. Please run onboarding.")
+        _MODEL = SentenceTransformer(
+            MODEL_SEMANTIC_PATH,
+            model_kwargs={"local_files_only": True}
+        )
+    return _MODEL
 
 
 def _delete_rows_by_media_id(table, media_id):
@@ -31,8 +39,7 @@ def _delete_rows_by_media_id(table, media_id):
 
 #converts text to embedding
 def embed(sentences):
-    
-    embeddings = MODEL.encode(sentences)
+    embeddings = get_model().encode(sentences)
     return embeddings.tolist()
     
 

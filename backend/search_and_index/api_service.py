@@ -135,3 +135,16 @@ def run_integrity_check() -> Dict[str, Any]:
 
 def create_backup(label: Optional[str] = None) -> Dict[str, Any]:
     return sql_database.create_backup(label=label)
+
+def get_onboarding_status() -> bool:
+    val = sql_database.get_setting("onboarding_completed", "false")
+    return val.lower() == "true"
+
+def set_onboarding_completed(completed: bool):
+    sql_database.set_setting("onboarding_completed", "true" if completed else "false")
+
+def get_app_setting(key: str, default: Any = None) -> Any:
+    return sql_database.get_setting(key, default)
+
+def set_app_setting(key: str, value: Any):
+    sql_database.set_setting(key, value)

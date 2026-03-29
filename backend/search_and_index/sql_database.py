@@ -75,15 +75,25 @@ def initialize_db():
         """
 
 
+        settings_create_table = """
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        );
+        """
+
         cursor = connection.cursor()
-
-
 
         try:
             cursor.execute(mediaFiles_create_table)
             cursor.execute(transcript_fts)
             cursor.execute(jobs_create_table)
             cursor.execute(jobs_status_index)
+            cursor.execute(settings_create_table)
+            
+            # Initial onboarding status
+            cursor.execute("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('onboarding_completed', 'false')")
+            
             connection.commit()
         except Exception as e:
             print(f"Database init error: {e}")
@@ -694,3 +704,19 @@ def create_backup(label=None):
         "vector_copied": os.path.isdir(vector_dst),
         "thumbnails_copied": os.path.isdir(thumbs_dst),
     }
+
+def get_setting(key, default=None):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT value FROM app_settings WHERE key = ?", (key,))
+        row = cursor.fetchone()
+        return row[0] if row else default
+
+def set_setting(key, value):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO app_settings (key, value) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, str(value)),
+        )
+        connection.commit()

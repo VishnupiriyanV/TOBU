@@ -27,7 +27,15 @@ THUMBNAIL_QUALITY = 80
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-visual_model = SentenceTransformer(MODEL_VISUAL_PATH, device=device,model_kwargs={"local_files_only":True})
+_visual_model = None
+
+def get_visual_model():
+    global _visual_model
+    if _visual_model is None:
+        if not os.path.exists(MODEL_VISUAL_PATH):
+            raise RuntimeError(f"Visual model not found at {MODEL_VISUAL_PATH}. Please run onboarding.")
+        _visual_model = SentenceTransformer(MODEL_VISUAL_PATH, device=device, model_kwargs={"local_files_only": True})
+    return _visual_model
 
 
 def clear_visual_for_media(media_id, db_path=VECTOR_DB_PATH):
@@ -100,7 +108,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
             
             
-            img_embedding = visual_model.encode(pil_img).tolist()
+            img_embedding = get_visual_model().encode(pil_img).tolist()
 
 
 
@@ -151,9 +159,9 @@ def search_visual_moments(query,image_path = False, db_path=VECTOR_DB_PATH, limi
         img = cv2.imread(query)
         colour_converted = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         pil_img = Image.fromarray(colour_converted)
-        query_vector = visual_model.encode(pil_img).tolist()
+        query_vector = get_visual_model().encode(pil_img).tolist()
     else:
-        query_vector = visual_model.encode(query).tolist()
+        query_vector = get_visual_model().encode(query).tolist()
 
 
     results = table.search(query_vector).limit(limit).to_list()

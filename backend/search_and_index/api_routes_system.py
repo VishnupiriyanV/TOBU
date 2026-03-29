@@ -184,3 +184,32 @@ async def cancel_indexing(payload: dict):
         cursor.execute("UPDATE indexing_jobs SET status = 'cancelled' WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
         connection.commit()
     return {"success": True}
+
+@router.get("/system/onboarding-status", response_model=EnvelopeSuccess)
+async def get_onboarding_status():
+    status = api_service.get_onboarding_status()
+    return {"ok": True, "data": {"completed": status}}
+
+@router.post("/system/onboarding-completed", response_model=EnvelopeSuccess)
+async def set_onboarding_completed(payload: dict):
+    completed = payload.get("completed", True)
+    api_service.set_onboarding_completed(completed)
+    return {"ok": True, "data": {"completed": completed}}
+
+@router.get("/system/models/status", response_model=EnvelopeSuccess)
+async def get_models_status():
+    import os
+    from backend.search_and_index import model_downloader
+    status = {
+        "semantic": os.path.exists(model_downloader.MODEL_SEMANTIC_PATH),
+        "visual": os.path.exists(model_downloader.MODEL_VISUAL_PATH),
+        "summarizer": os.path.exists(model_downloader.MODEL_SUMMARIZER_PATH),
+    }
+    return {"ok": True, "data": status}
+
+@router.post("/system/models/download", response_model=EnvelopeSuccess)
+async def download_models():
+    from backend.search_and_index import model_downloader
+    # We run this in the background thread to avoid blocking the API
+    executor.submit(model_downloader.ensure_all_models)
+    return {"ok": True, "data": {"message": "Download started in background"}}

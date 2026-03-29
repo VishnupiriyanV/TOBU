@@ -159,3 +159,22 @@ input:focus, select:focus, textarea:focus {
   text-align: center;
   padding: 40px 20px;
 }
+
+/* ── Premium Effects ── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glow-subtle {
+  box-shadow: 0 0 20px rgba(201, 191, 255, 0.1);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), #fff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
