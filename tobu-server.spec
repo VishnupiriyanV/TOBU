@@ -1,17 +1,39 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 block_cipher = None
-
-from PyInstaller.utils.hooks import collect_data_files
 
 datas_list = []
 datas_list += collect_data_files('fastapi')
 datas_list += collect_data_files('starlette')
+datas_list += collect_data_files('faster_whisper')
+datas_list += collect_data_files('ctranslate2')
+datas_list += collect_data_files('sentence_transformers')
+datas_list += collect_data_files('torch')
+datas_list += collect_data_files('transformers')
+datas_list += collect_data_files('tokenizers')
+datas_list += collect_data_files('lancedb')
+datas_list += collect_data_files('pyarrow')
+datas_list += collect_data_files('cv2')
+
+# Collect models directory if it exists
+if os.path.exists('models'):
+    datas_list.append(('models', 'models'))
+
+binaries_list = []
+# Explicitly collect ctranslate2 dynamic libs (DLLs)
+binaries_list += collect_dynamic_libs('ctranslate2')
+
+# Also handle those tricky NVIDIA DLLs if they are in site-packages
+# PyInstaller usually finds them if they are in the PATH or site-packages root,
+# but faster-whisper/ctranslate2 needs them specifically.
 
 a = Analysis(
     ['tobu_launcher.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=binaries_list,
     datas=datas_list,
     hiddenimports=[
         'fastapi',
@@ -38,6 +60,7 @@ a = Analysis(
         'anyio._backends._asyncio',
         'click',
         'pydantic',
+        'pydantic_core',
         'sqlite3',
         'watchdog',
         'python-multipart',
@@ -65,7 +88,7 @@ a = Analysis(
         'fitz', # PyMuPDF
         'frontmatter',
         
-        # Internal Backend modules required to exist dynamically
+        # Internal Backend modules
         'backend.search_and_index.sql_database', 
         'backend.search_and_index.runtime_service', 
         'backend.search_and_index.watch',
@@ -114,3 +137,5 @@ coll = COLLECT(
     upx_exclude=[],
     name='fastapi-server',
 )
+
+
