@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from .api_models import EnvelopeSuccess, JobItem
-from . import api_service
+from backend.search_and_index.api_models import EnvelopeSuccess, JobItem
+from backend.search_and_index import api_service
 
 router = APIRouter(prefix="/api/v1/jobs", tags=["Jobs"])
 

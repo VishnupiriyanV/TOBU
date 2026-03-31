@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TOBU | Kinetic Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary": "#2f148c",
+                        "surface-container": "#201f1f",
+                        "inverse-on-surface": "#313030",
+                        "secondary": "#c8c6c5",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary-fixed": "#e5deff",
+                        "surface": "#131313",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-variant": "#353534",
+                        "surface-dim": "#131313",
+                        "on-primary-fixed-variant": "#4632a2",
+                        "tertiary-container": "#cca81c",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#eac33a",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#1b1b1c",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#1a0063",
+                        "on-primary-container": "#32198f",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#353534",
+                        "background": "#131313",
+                        "on-tertiary-fixed-variant": "#564500",
+                        "on-tertiary-fixed": "#231b00",
+                        "secondary-container": "#474746",
+                        "tertiary-fixed": "#ffe080",
+                        "primary-fixed-dim": "#c9bfff",
+                        "on-tertiary": "#3c2f00",
+                        "tertiary-fixed-dim": "#e9c33a",
+                        "surface-tint": "#c9bfff",
+                        "surface-bright": "#3a3939",
+                        "on-secondary-container": "#b7b5b4",
+                        "on-surface-variant": "#c9c4d5",
+                        "primary-container": "#9d8cff",
+                        "on-tertiary-container": "#4e3e00",
+                        "outline": "#938f9e",
+                        "on-surface": "#e5e2e1",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary": "#c9bfff",
+                        "inverse-primary": "#5e4dbb",
+                        "error-container": "#93000a",
+                        "surface-container-high": "#2a2a2a",
+                        "on-secondary": "#303030",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-background": "#e5e2e1",
+                        "outline-variant": "#484552"
+                    },
+                    fontFamily: {
+                        "headline": ["IBM Plex Sans"],
+                        "body": ["IBM Plex Sans"],
+                        "label": ["IBM Plex Sans"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        .explorer-row { height: 28px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0e0e0e; }
+        ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c9bfff; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full sticky top-0 z-40 bg-[#131313] h-12 px-6">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-[#c9bfff] font-black tracking-tighter uppercase text-[14px] font-semibold">TOBU</span>
+</div>
+<nav class="flex items-center gap-4">
+<a class="text-[#c9bfff] border-b border-[#c9bfff] font-['IBM_Plex_Sans'] uppercase tracking-wider text-[11px] font-semibold transition-all duration-200" href="#">File</a>
+<a class="text-gray-400 hover:text-[#c9bfff] hover:bg-[#1c1b1b] font-['IBM_Plex_Sans'] uppercase tracking-wider text-[11px] font-semibold transition-all duration-200 px-2 py-1" href="#">Edit</a>
+<a class="text-gray-400 hover:text-[#c9bfff] hover:bg-[#1c1b1b] font-['IBM_Plex_Sans'] uppercase tracking-wider text-[11px] font-semibold transition-all duration-200 px-2 py-1" href="#">Selection</a>
+<a class="text-gray-400 hover:text-[#c9bfff] hover:bg-[#1c1b1b] font-['IBM_Plex_Sans'] uppercase tracking-wider text-[11px] font-semibold transition-all duration-200 px-2 py-1" href="#">View</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-lowest border-none text-[11px] font-mono w-64 h-7 px-3 rounded-sm focus:ring-1 focus:ring-primary focus:bg-surface-container-high transition-all" placeholder="Search Command Palette..." type="text"/>
+<span class="absolute right-2 top-1.5 text-[9px] text-outline opacity-50 font-mono">⌘P</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 hover:text-primary cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-gray-400 hover:text-primary cursor-pointer" data-icon="help_outline">help_outline</span>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Side Navigation Rail -->
+<aside class="h-full sticky top-0 left-0 flex flex-col bg-[#0e0e0e] w-20 items-center py-4 z-50">
+<div class="mb-8">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center border border-outline-variant/20">
+<span class="text-[#c9bfff] font-bold text-lg">K</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 w-full flex-1">
+<div class="relative flex items-center justify-center w-full py-3 bg-[#1c1b1b] text-[#c9bfff] before:absolute before:left-0 before:w-[3px] before:h-6 before:bg-[#c9bfff] before:rounded-full group cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined" data-icon="grid_view" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-gray-500 hover:text-gray-300 hover:bg-[#1c1b1b] transition-colors duration-150 cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-gray-500 hover:text-gray-300 hover:bg-[#1c1b1b] transition-colors duration-150 cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-gray-500 hover:text-gray-300 hover:bg-[#1c1b1b] transition-colors duration-150 cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-center justify-center w-full py-3 text-gray-500 hover:text-gray-300 hover:bg-[#1c1b1b] transition-colors duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</div>
+<div class="flex items-center justify-center w-full py-4">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyoXS_7gkhCbGNPjNDozfYJLoyVU3jO7QnbQkwq2gsYsC2A2U4oAcUXEk1sP_DaywwU3U5wukSR2CUQf4K_7Rw9g_-9nOjdOA4EsP9o95wLVenZMCaGN1EzbKzH8uUj5GfTKush0Pj-gM9zoe6oRi5VSDJtzn2qWs8kwo7_fdwFl6pf5l53peqRYQ17JdL9GIUgfIKQIPivRB39ih8FG212lMfupY3ny4uOMffe8UNZfd9zi_20i7gfL9Su-Q7_e1gVJfKfEo2bKY"/>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace Area -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Pane: File Explorer (VS Code Style) -->
+<div class="w-64 bg-surface-container-lowest flex flex-col border-r border-outline-variant/10 flex-shrink-0">
+<div class="px-4 py-3 flex justify-between items-center uppercase tracking-widest text-[10px] font-bold text-outline opacity-70">
+<span>Explorer</span>
+<span class="material-symbols-outlined scale-75 cursor-pointer" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="flex-1 overflow-y-auto px-2 font-mono text-[11px]">
+<!-- Folder Item -->
+<div class="explorer-row flex items-center gap-1 px-1 hover:bg-surface-container-low cursor-pointer group rounded">
+<span class="material-symbols-outlined scale-75 text-outline" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined scale-75 text-primary" data-icon="folder" style="font-variation-settings: 'FILL' 1;">folder</span>
+<span class="text-on-surface/80">workspace-alpha</span>
+</div>
+<!-- Nested Items -->
+<div class="pl-4">
+<div class="explorer-row flex items-center gap-1 px-1 hover:bg-surface-container-low cursor-pointer rounded">
+<span class="material-symbols-outlined scale-75 text-outline" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined scale-75 text-primary/60" data-icon="folder">folder</span>
+<span class="text-on-surface/80">src</span>
+</div>
+<div class="explorer-row flex items-center gap-1 px-1 hover:bg-surface-container-low cursor-pointer rounded">
+<span class="material-symbols-outlined scale-75 text-outline" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+<span class="material-symbols-outlined scale-75 text-primary/60" data-icon="folder">folder</span>
+<span class="text-on-surface/80">documents</span>
+</div>
+<div class="pl-4">
+<div class="explorer-row flex items-center gap-2 px-1 hover:bg-surface-container-low cursor-pointer rounded border-l border-outline-variant/20 ml-1">
+<span class="material-symbols-outlined scale-75 text-red-400" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span class="text-on-surface/80">q4_report_v2.pdf</span>
+</div>
+<div class="explorer-row flex items-center gap-2 px-1 bg-surface-container-low cursor-pointer rounded border-l-2 border-primary ml-1">
+<span class="material-symbols-outlined scale-75 text-blue-400" data-icon="video_library">video_library</span>
+<span class="text-primary font-medium">interview_session.mp4</span>
+</div>
+<div class="explorer-row flex items-center gap-2 px-1 hover:bg-surface-container-low cursor-pointer rounded border-l border-outline-variant/20 ml-1">
+<span class="material-symbols-outlined scale-75 text-orange-400" data-icon="description">description</span>
+<span class="text-on-surface/80">meeting_notes.md</span>
+</div>
+</div>
+</div>
+<div class="explorer-row flex items-center gap-1 px-1 mt-2 hover:bg-surface-container-low cursor-pointer rounded">
+<span class="material-symbols-outlined scale-75 text-outline" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+<span class="material-symbols-outlined scale-75 text-primary/60" data-icon="folder">folder</span>
+<span class="text-on-surface/80">assets</span>
+</div>
+</div>
+</div>
+<!-- Center Pane: Search Results (Obsidian Style) -->
+<div class="flex-1 flex flex-col bg-surface overflow-hidden">
+<!-- Header / Tabs -->
+<div class="h-10 border-b border-outline-variant/10 flex items-center px-4 bg-surface-container-lowest/50 backdrop-blur-md flex-shrink-0">
+<nav class="flex gap-4 h-full items-center">
+<button class="text-[11px] font-bold uppercase tracking-widest text-primary border-b-2 border-primary h-full px-2">Hybrid</button>
+<button class="text-[11px] font-bold uppercase tracking-widest text-outline hover:text-on-surface h-full px-2">Semantic</button>
+<button class="text-[11px] font-bold uppercase tracking-widest text-outline hover:text-on-surface h-full px-2">Keyword</button>
+</nav>
+<div class="ml-auto flex items-center gap-2 text-[10px] text-outline font-mono">
+<span>32 Results Found</span>
+<span class="material-symbols-outlined scale-75" data-icon="filter_list">filter_list</span>
+</div>
+</div>
+<!-- Search Input Area -->
+<div class="p-4 space-y-4 flex-shrink-0">
+<div class="flex gap-2">
+<div class="flex-1 bg-surface-container-lowest border-b-2 border-primary/50 focus-within:border-primary transition-colors flex items-center px-3 py-2">
+<span class="material-symbols-outlined text-outline mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none w-full text-sm font-body focus:ring-0 placeholder:text-outline/50" type="text" value="customer feedback session recording"/>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-4 py-2 rounded-sm text-[11px] font-bold uppercase tracking-widest transition-all">Execute</button>
+</div>
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-[10px] font-mono text-outline">
+<span class="hover:text-primary cursor-pointer">workspace-alpha</span>
+<span>/</span>
+<span class="hover:text-primary cursor-pointer">documents</span>
+<span>/</span>
+<span class="text-primary font-bold">interview_session.mp4</span>
+</div>
+</div>
+<!-- Results List -->
+<div class="flex-1 overflow-y-auto px-4 pb-12 space-y-1">
+<!-- Result Card 1 (Active/Selected) -->
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-primary shadow-lg shadow-black/20 group cursor-pointer transition-all hover:translate-x-1">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400" data-icon="video_library">video_library</span>
+<h3 class="text-sm font-semibold text-primary">interview_session.mp4</h3>
+</div>
+<span class="text-[10px] font-mono bg-surface-container-highest px-2 py-0.5 rounded text-outline">Match Score: 0.98</span>
+</div>
+<p class="text-xs text-on-surface/70 line-clamp-2 mb-3">
+                            "...we should focus on the <mark class="bg-primary/30 text-primary px-0.5 rounded">customer feedback</mark> from the last session. The user mentioned specifically the latency during initial load..."
+                        </p>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono px-2 py-0.5 bg-surface-container-lowest text-outline rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="schedule">schedule</span> 14:22
+                            </span>
+<span class="text-[10px] font-mono px-2 py-0.5 bg-surface-container-lowest text-outline rounded">7.2 MB</span>
+</div>
+</div>
+<!-- Result Card 2 -->
+<div class="p-4 hover:bg-surface-container-low rounded-lg transition-all group cursor-pointer border-l-4 border-transparent hover:border-outline-variant/30">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-400" data-icon="description">description</span>
+<h3 class="text-sm font-semibold text-on-surface/90">meeting_notes.md</h3>
+</div>
+<span class="text-[10px] font-mono text-outline">Match Score: 0.82</span>
+</div>
+<p class="text-xs text-on-surface/50 line-clamp-2">
+                            "...Action item: Schedule a <mark class="bg-primary/20 text-on-surface px-0.5 rounded">feedback session</mark> with the design team regarding TOBU lavender theme implementation..."
+                        </p>
+</div>
+<!-- Result Card 3 -->
+<div class="p-4 hover:bg-surface-container-low rounded-lg transition-all group cursor-pointer border-l-4 border-transparent hover:border-outline-variant/30">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-red-400" data-icon="picture_as_pdf">picture_as_pdf</span>
+<h3 class="text-sm font-semibold text-on-surface/90">Q4_User_Research.pdf</h3>
+</div>
+<span class="text-[10px] font-mono text-outline">Match Score: 0.75</span>
+</div>
+<p class="text-xs text-on-surface/50 line-clamp-2">
+                            "...Cumulative <mark class="bg-primary/20 text-on-surface px-0.5 rounded">feedback</mark> metrics show an 18% increase in user retention after the dark-mode update..."
+                        </p>
+</div>
+</div>
+</div>
+<!-- Right Pane: File Viewer (Preview Panel) -->
+<div class="w-1 hover:w-1 group cursor-col-resize relative flex-shrink-0 transition-all duration-200">
+<div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-outline-variant/20 group-hover:bg-primary group-hover:w-[2px] transition-all duration-200 shadow-sm"></div>
+</div>
+<div class="w-[450px] bg-surface-container-lowest border-l border-outline-variant/10 flex flex-col overflow-hidden flex-shrink-0">
+<!-- Viewer Header -->
+<div class="h-10 border-b border-outline-variant/10 flex items-center justify-between px-4 bg-surface-container-lowest flex-shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="visibility">visibility</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Media Inspector</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-primary cursor-pointer" data-icon="open_in_new">open_in_new</span>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-primary cursor-pointer" data-icon="close">close</span>
+</div>
+</div>
+<!-- Preview Content: Video Player Mode -->
+<div class="flex-1 overflow-y-auto">
+<!-- Video Hero Section -->
+<div class="aspect-video bg-black relative group overflow-hidden">
+<img class="w-full h-full object-cover opacity-60" data-alt="Dark aesthetic cinematic video still of a user interface design discussion in a professional workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8d_ruBdOm2PIekDEV3aSLlPWL1wJ7ZYbRIKDh10k1x2wy5cye5KMDKfsVK7YcGEI4xQv8YDd4tCuLrOyfvJYcCWWTqYE-AMpHL6MvID08b_1QGqnOFS-lVxYDf0FP2ri-4pUBpBGBoWHktF0oCQxcZkZpZ1ZfLdtf8UB9e-IwPOyLJRtlBU9d6ij6dsdNyQk9d28JX-nvwL4-08XAf3eZ-S_qNgZBBtccSWLv6d0gSx4RgcnMcgfOQAn5elSwu5OpNgDwggPYo3c"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-16 h-16 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/30 group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<!-- Custom Controls -->
+<div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black/80 to-transparent">
+<div class="h-1 w-full bg-surface-container-highest rounded-full mb-2 overflow-hidden">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+<div class="flex justify-between text-[10px] font-mono text-outline">
+<span>14:22</span>
+<span>45:00</span>
+</div>
+</div>
+</div>
+<!-- Transcript / Segments -->
+<div class="p-6">
+<h4 class="text-[11px] font-bold uppercase tracking-widest text-primary mb-4 border-b border-outline-variant/10 pb-2">Segmented Analysis</h4>
+<div class="space-y-4">
+<!-- Segment 1 -->
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-mono text-primary font-bold">02:15 - 05:40</span>
+<span class="text-[10px] font-mono text-outline px-1.5 py-0.5 bg-surface-container-low rounded">Onboarding</span>
+</div>
+<p class="text-xs text-on-surface/80 leading-relaxed border-l-2 border-outline-variant/30 pl-3 group-hover:border-primary transition-colors">
+                                    Discussion about the initial onboarding flow and how the user struggled with the lavender accent visibility on high-brightness displays.
+                                </p>
+</div>
+<!-- Segment 2 -->
+<div class="group cursor-pointer bg-primary/5 p-3 rounded-md border border-primary/20">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-mono text-primary font-bold">14:10 - 18:22</span>
+<span class="text-[10px] font-mono bg-primary text-on-primary px-1.5 py-0.5 rounded">Core Feedback</span>
+</div>
+<p class="text-xs text-on-surface leading-relaxed border-l-2 border-primary pl-3">
+                                    Detailed feedback on the search functionality. User specifically mentioned the "Semantic" vs "Hybrid" search toggle being a major productivity boost.
+                                </p>
+</div>
+<!-- Segment 3 -->
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-mono text-primary font-bold">32:00 - 40:15</span>
+<span class="text-[10px] font-mono text-outline px-1.5 py-0.5 bg-surface-container-low rounded">Closing</span>
+</div>
+<p class="text-xs text-on-surface/80 leading-relaxed border-l-2 border-outline-variant/30 pl-3 group-hover:border-primary transition-colors">
+                                    Final thoughts on the kinetic studio architecture. Suggestions for a "File Viewer" expansion were noted here.
+                                </p>
+</div>
+</div>
+<!-- Technical Specs -->
+<div class="mt-8 pt-6 border-t border-outline-variant/10">
+<h4 class="text-[10px] font-bold uppercase tracking-widest text-outline mb-3">Metadata</h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="block text-[9px] text-outline font-mono uppercase mb-1">Codec</span>
+<span class="text-[11px] font-mono text-on-surface">H.264 High Profile</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="block text-[9px] text-outline font-mono uppercase mb-1">Resolution</span>
+<span class="text-[11px] font-mono text-on-surface">1920 x 1080</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="block text-[9px] text-outline font-mono uppercase mb-1">Framerate</span>
+<span class="text-[11px] font-mono text-on-surface">29.97 fps</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<span class="block text-[9px] text-outline font-mono uppercase mb-1">Capture Date</span>
+<span class="text-[11px] font-mono text-on-surface">Oct 24, 2023</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Status Footer -->
+<footer class="flex justify-between items-center w-full z-50 fixed bottom-0 h-6 px-4 bg-[#0e0e0e] border-t border-[#1c1b1b] font-['JetBrains_Mono'] text-[10px] uppercase">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-[#c9bfff]">
+<span class="material-symbols-outlined text-[12px]" data-icon="sync">sync</span>
+<span>Workspace Synchronized</span>
+</div>
+<div class="text-gray-500 hover:text-white cursor-pointer transition-colors opacity-80 hover:opacity-100">Ln 12, Col 45</div>
+<div class="text-gray-500 hover:text-white cursor-pointer transition-colors opacity-80 hover:opacity-100">UTF-8</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(201,191,255,0.5)]"></div>
+<span class="text-gray-500">Live Server Active</span>
+</div>
+<div class="text-[#c9bfff] font-bold">Main*</div>
+<div class="text-gray-500 opacity-80">v1.4.2-stable</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,53 @@
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 24px;
+  min-height: 24px;
+  padding: 0 16px;
+  background: var(--surface-container-lowest);
+  border-top: 1px solid rgba(72, 69, 82, 0.1);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  z-index: 40;
+}
+
+.statusbar-left,
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.statusbar-health {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusbar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.statusbar-dot--ok {
+  background: var(--primary);
+  box-shadow: 0 0 8px rgba(201, 191, 255, 0.5);
+}
+
+.statusbar-dot--err {
+  background: var(--error);
+  box-shadow: 0 0 8px rgba(255, 180, 171, 0.5);
+}
+
+.statusbar-label {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.statusbar-meta {
+  color: #6b7280;
+  opacity: 0.6;
+}

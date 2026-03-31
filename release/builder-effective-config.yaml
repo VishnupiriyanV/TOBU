@@ -1,0 +1,22 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.tobu.desktop
+productName: TOBU
+files:
+  - filter:
+      - package.json
+      - desktop/**/*
+      - client/dist/**/*
+extraResources:
+  - from: dist/fastapi-server
+    to: dist/fastapi-server
+    filter:
+      - '**/*'
+win:
+  target: nsis
+mac:
+  target: dmg
+linux:
+  target: AppImage
+electronVersion: 30.5.1

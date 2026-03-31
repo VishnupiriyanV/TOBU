@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from .api_models import EnvelopeSuccess
-from . import api_service
+from backend.search_and_index.api_models import EnvelopeSuccess
+from backend.search_and_index import api_service
 
 router = APIRouter(prefix="/api/v1/ingest", tags=["Ingest"])
 

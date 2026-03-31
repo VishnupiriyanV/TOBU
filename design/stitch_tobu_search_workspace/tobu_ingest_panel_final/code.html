@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TOBU | Ingest Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #0e0e0e;
+            color: #e5e2e1;
+            margin: 0;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c9bfff;
+        }
+        .border-thin {
+            border: 1px solid rgba(201, 191, 255, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#353534",
+                        "on-primary": "#2f148c",
+                        "background": "#0e0e0e",
+                        "error-container": "#93000a",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "secondary-container": "#474746",
+                        "tertiary": "#eac33a",
+                        "on-secondary-container": "#b7b5b4",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary-fixed": "#1b1b1c",
+                        "inverse-primary": "#5e4dbb",
+                        "inverse-surface": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#564500",
+                        "tertiary-fixed-dim": "#e9c33a",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary-container": "#32198f",
+                        "surface-dim": "#131313",
+                        "on-error": "#690005",
+                        "surface-variant": "#353534",
+                        "primary-fixed-dim": "#c9bfff",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#1a0063",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary-fixed": "#e5deff",
+                        "surface-tint": "#c9bfff",
+                        "outline": "#938f9e",
+                        "on-primary-fixed-variant": "#4632a2",
+                        "on-background": "#e5e2e1",
+                        "outline-variant": "#484552",
+                        "surface-container": "#201f1f",
+                        "on-tertiary-container": "#4e3e00",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffe080",
+                        "primary-container": "#9d8cff",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-on-surface": "#313030",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#303030",
+                        "surface": "#131313",
+                        "primary": "#c9bfff",
+                        "on-tertiary": "#3c2f00",
+                        "on-tertiary-fixed": "#231b00",
+                        "surface-bright": "#3a3939",
+                        "secondary": "#c8c6c5",
+                        "on-surface-variant": "#c9c4d5",
+                        "tertiary-container": "#cca81c"
+                    },
+                    fontFamily: {
+                        "headline": ["IBM Plex Sans"],
+                        "body": ["IBM Plex Sans"],
+                        "label": ["IBM Plex Sans"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="overflow-hidden bg-background text-on-surface selection:bg-primary/30 h-screen flex flex-col">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full z-50 flex flex-col w-16 items-center py-4 bg-[#0a0a0a] border-r border-outline-variant/10">
+<div class="mb-8">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center border border-primary/20">
+<span class="text-primary font-bold text-lg">T</span>
+</div>
+</div>
+<nav class="flex flex-col gap-1 w-full flex-1 items-center">
+<button class="w-full flex justify-center py-3 text-gray-500 hover:text-primary hover:bg-[#1c1b1b] transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</button>
+<button class="w-full flex justify-center py-3 text-gray-500 hover:text-primary hover:bg-[#1c1b1b] transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="w-full flex justify-center py-3 text-gray-500 hover:text-primary hover:bg-[#1c1b1b] transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+</button>
+<!-- ACTIVE TAB: Ingest -->
+<div class="relative flex items-center justify-center w-full py-3 bg-primary/10 text-primary before:absolute before:left-0 before:w-[2px] before:h-6 before:bg-primary before:rounded-full group cursor-pointer transition-transform active:scale-90">
+<span class="material-symbols-outlined" data-icon="input" style="font-variation-settings: 'FILL' 1;">input</span>
+</div>
+<button class="w-full flex justify-center py-3 text-gray-500 hover:text-primary hover:bg-[#1c1b1b] transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="movie">movie</span>
+</button>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-4">
+<button class="text-gray-500 hover:text-primary">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-outline-variant/30 overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3TJmJLLZ0_G6JsSOBemiL4LZUAf1-6X43h4QAzHlwbom39cPIH-_KaW6LTQ6rLrc-xLxuWkiQ1cBPuXTfOI78TA2dNvFHo2pWYYdmpXhq03ZG1H7ydybqhg1UX2RkoULbTmwXkqOh9wh2do7QaRlkiYlI8T1WMZO_f0c5YbC4GiLkzcL3mm7WNEtOkhpWRLZe-qu_3lY9Xwtyrlbz6DIZiGKuLSFhvZZhvpQt6pAzYBpz2rJ9bXALkIikyKNIK3H5nEXNUdJLUAk"/>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Anchor -->
+<header class="fixed top-0 right-0 left-16 h-12 flex justify-between items-center px-6 z-40 bg-[#131313] border-b border-outline-variant/10">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-primary font-black tracking-[0.2em] text-[12px] font-headline uppercase">TOBU</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-gray-500 hover:text-primary font-body uppercase tracking-wider text-[10px] font-semibold transition-all" href="#">Overview</a>
+<a class="text-gray-500 hover:text-primary font-body uppercase tracking-wider text-[10px] font-semibold transition-all" href="#">Metrics</a>
+<a class="text-primary border-b border-primary/40 font-body uppercase tracking-wider text-[10px] font-semibold transition-all pb-0.5" href="#">Logs</a>
+<a class="text-gray-500 hover:text-primary font-body uppercase tracking-wider text-[10px] font-semibold transition-all" href="#">Config</a>
+</nav>
+</div>
+<div class="flex items-center gap-5">
+<div class="relative group">
+<input class="bg-[#0a0a0a] border-none text-[10px] font-mono w-64 h-7 px-3 rounded-sm focus:ring-1 focus:ring-primary/50 focus:bg-surface-container-high transition-all text-on-surface" placeholder="Search Cluster Palette..." type="text"/>
+<span class="absolute right-2 top-1.5 text-[8px] text-outline/50 font-mono">⌘P</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-500 hover:text-primary cursor-pointer text-[18px]" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-gray-500 hover:text-primary cursor-pointer text-[18px]" data-icon="help_outline">help_outline</span>
+</div>
+</div>
+</header>
+<!-- Main Workspace: High-Density 3-Pane Layout -->
+<main class="ml-16 mt-12 mb-6 h-[calc(100vh-4.5rem)] flex overflow-hidden">
+<!-- Sidebar / Navigation Pane (Pane 1) -->
+<div class="w-64 border-r border-outline-variant/10 flex flex-col bg-[#111111]">
+<div class="p-4 border-b border-outline-variant/10">
+<h2 class="text-[10px] font-bold text-outline uppercase tracking-[0.2em] mb-4">Ingestion Nodes</h2>
+<div class="space-y-1">
+<div class="flex items-center justify-between p-2 rounded-sm bg-primary/5 border border-primary/20 cursor-pointer">
+<span class="text-[11px] mono text-primary">staging-node-04</span>
+<span class="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(201,191,255,0.4)]"></span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-sm hover:bg-white/5 cursor-pointer text-outline hover:text-on-surface transition-colors">
+<span class="text-[11px] mono">staging-node-05</span>
+<span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-sm hover:bg-white/5 cursor-pointer text-outline hover:text-on-surface transition-colors">
+<span class="text-[11px] mono">staging-node-06</span>
+<span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-4">
+<h2 class="text-[10px] font-bold text-outline uppercase tracking-[0.2em] mb-4">Staging Folders</h2>
+<div class="space-y-1">
+<div class="flex items-center gap-2 p-2 text-[11px] text-outline hover:text-on-surface cursor-pointer rounded-sm hover:bg-white/5">
+<span class="material-symbols-outlined text-[14px]">folder</span>
+<span>/raw_ingest/batch_01</span>
+</div>
+<div class="flex items-center gap-2 p-2 text-[11px] text-outline hover:text-on-surface cursor-pointer rounded-sm hover:bg-white/5">
+<span class="material-symbols-outlined text-[14px]">folder</span>
+<span>/raw_ingest/batch_02</span>
+</div>
+<div class="flex items-center gap-2 p-2 text-[11px] text-on-surface bg-white/5 rounded-sm border-l border-primary/40">
+<span class="material-symbols-outlined text-[14px] text-primary">folder_open</span>
+<span>/raw_ingest/terminal_stream</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Center Pane: Controls & Data (Pane 2) -->
+<div class="w-[450px] border-r border-outline-variant/10 flex flex-col bg-surface-dim">
+<div class="h-10 border-b border-outline-variant/10 flex items-center px-4 bg-[#1a1a1a]">
+<span class="text-[10px] mono text-primary uppercase font-bold tracking-widest">Workspace Controls</span>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Uploader -->
+<div class="bg-surface-container-lowest border-thin p-6 flex flex-col items-center justify-center rounded-sm group hover:border-primary/40 transition-all cursor-pointer relative overflow-hidden h-64">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
+<span class="material-symbols-outlined text-3xl text-primary/40 group-hover:text-primary transition-colors mb-3" data-icon="upload_file">upload_file</span>
+<h3 class="font-mono text-[11px] font-bold text-on-surface/90 tracking-[0.2em] mb-1 uppercase">STAGING_UPLOADER</h3>
+<p class="text-[9px] text-outline font-mono uppercase tracking-widest text-center">Drop or <span class="text-primary underline">scan local</span></p>
+<div class="mt-6 flex gap-2">
+<span class="px-2 py-0.5 bg-surface-container-low border border-outline-variant/10 text-[8px] mono text-outline rounded-sm">2.4GB LIMIT</span>
+<span class="px-2 py-0.5 bg-surface-container-low border border-outline-variant/10 text-[8px] mono text-outline rounded-sm">RAW_LOG</span>
+</div>
+</div>
+<!-- Parameters -->
+<div class="space-y-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-[9px] mono text-outline uppercase tracking-widest">Process Priority</label>
+<select class="bg-surface-container-low border-thin text-[10px] mono text-on-surface h-8 px-2 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none">
+<option>ULTRA_LOW_LATENCY</option>
+<option>BALANCED_THROUGHPUT</option>
+<option>BATCH_CONSOLIDATED</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[9px] mono text-outline uppercase tracking-widest">Output Destination</label>
+<input class="bg-surface-container-low border-thin text-[10px] mono text-on-surface h-8 px-2 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none" type="text" value="/mnt/prod/replica_a"/>
+</div>
+</div>
+<!-- Status Metrics Small -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-lowest border-thin p-3 rounded-sm">
+<div class="text-[9px] mono text-primary uppercase font-bold mb-1">CPU Load</div>
+<div class="text-xl font-mono font-bold tracking-tighter">74%</div>
+</div>
+<div class="bg-surface-container-lowest border-thin p-3 rounded-sm">
+<div class="text-[9px] mono text-primary uppercase font-bold mb-1">Latency</div>
+<div class="text-xl font-mono font-bold tracking-tighter">14ms</div>
+</div>
+</div>
+<button class="w-full bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-all">
+                Initialize Batch
+            </button>
+</div>
+</div>
+<!-- Main Content Area: Terminal (Pane 3) -->
+<div class="flex-1 flex flex-col bg-background">
+<!-- Secondary Header -->
+<div class="h-10 border-b border-outline-variant/10 flex items-center px-6 bg-[#1a1a1a]">
+<div class="flex items-center gap-2 text-[10px] font-mono text-outline">
+<span class="hover:text-primary cursor-pointer uppercase">ingestion</span>
+<span>/</span>
+<span class="hover:text-primary cursor-pointer uppercase">staging-node-04</span>
+<span>/</span>
+<span class="text-primary font-bold uppercase tracking-widest">batch-terminal</span>
+</div>
+<div class="ml-auto flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(201,191,255,0.4)]"></span>
+<span class="text-[10px] mono text-primary uppercase font-bold">Node Ready</span>
+</div>
+</div>
+</div>
+<!-- Terminal Stream -->
+<div class="flex-1 flex flex-col p-6 overflow-hidden">
+<div class="bg-black/40 border-thin rounded-sm flex flex-col h-full shadow-inner">
+<div class="px-4 py-2 border-b border-outline-variant/10 flex justify-between items-center bg-[#111111]">
+<span class="text-[9px] font-bold uppercase tracking-[0.2em] text-outline">Raw Terminal Output v4.2</span>
+<div class="flex gap-4">
+<button class="text-[9px] mono text-primary hover:underline uppercase tracking-widest">Auto-scroll: ON</button>
+<button class="text-[9px] mono text-outline hover:text-on-surface uppercase tracking-widest flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">open_in_full</span> Expand
+                        </button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 font-mono text-[12px] text-outline/90 leading-relaxed bg-[#050505]">
+<p><span class="text-primary/60">[14:22:01]</span> <span class="text-primary font-bold">SYSTEM</span> BATCH_INIT 0x442ff ... OK</p>
+<p><span class="text-primary/60">[14:22:03]</span> <span class="text-primary font-bold">STORAGE</span> STREAM_MOUNT /mnt/data/logs ... SUCCESS</p>
+<p><span class="text-primary/60">[14:22:05]</span> <span class="text-primary font-bold">PARSER</span> 1,204 records ... <span class="text-primary animate-pulse">IN_PROGRESS</span></p>
+<p><span class="text-primary/60">[14:22:10]</span> <span class="text-primary font-bold">VERIFY</span> CHECKSUM_VERIFY hash:8f2b1a ... OK</p>
+<p><span class="text-error/60">[14:22:15]</span> <span class="text-error font-bold">WARN</span> Node load spike detected in cluster_alpha</p>
+<p><span class="text-primary/60">[14:22:18]</span> <span class="text-primary font-bold">MEMORY</span> BUFFER_FLUSH ... COMPLETE</p>
+<p><span class="text-primary/60">[14:22:25]</span> <span class="text-primary font-bold">DB</span> COMMITTING TRANSACTIONS ... OK</p>
+<p><span class="text-primary/60">[14:22:30]</span> <span class="text-primary font-bold">SYNC</span> REPLICATING TO SECONDARY SHARD ... OK</p>
+<p><span class="text-primary/60">[14:22:35]</span> <span class="text-primary font-bold">STATUS</span> SYNC_STATUS: COMPLETED</p>
+<p class="text-primary/40 mt-4 border-t border-primary/10 pt-4">-- LISTENING ON PORT 8080 --</p>
+<p class="text-primary/40 mt-1">-- WAITING FOR NEXT DATA BATCH --</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Anchor -->
+<footer class="fixed bottom-0 right-0 left-16 h-6 flex items-center justify-between px-4 z-40 bg-[#0a0a0a] border-t border-outline-variant/10 font-mono text-[9px] uppercase">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-primary font-bold">
+<span class="material-symbols-outlined text-[12px]" data-icon="sync">sync</span>
+<span>Cluster Synced</span>
+</div>
+<span class="text-outline/60">Latency: <span class="text-primary">14ms</span></span>
+<span class="text-outline/60">Node: <span class="text-on-surface">obsidian-04</span></span>
+<span class="text-outline/60">2023.10.12</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-primary hover:text-white transition-colors tracking-widest">Terminal</button>
+<button class="text-outline/60 hover:text-white transition-colors tracking-widest">Output</button>
+<button class="text-outline/60 hover:text-white transition-colors tracking-widest">Debug</button>
+<div class="ml-4 flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(201,191,255,0.4)]"></div>
+<span class="text-outline/60">v4.2.1-Aether</span>
+</div>
+</div>
+</footer>
+</body></html>

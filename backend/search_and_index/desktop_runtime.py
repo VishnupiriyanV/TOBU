@@ -8,7 +8,11 @@ import traceback
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parents[1]  # TOBU root
+if getattr(sys, 'frozen', False):
+    ROOT_DIR = Path(os.path.expanduser("~/.tobu"))
+    ROOT_DIR.mkdir(parents=True, exist_ok=True)
+else:
+    ROOT_DIR = BASE_DIR.parents[1]  # TOBU root
 WATCH_FOLDER = str((ROOT_DIR / "watch").resolve())
 LOG_DIR = ROOT_DIR / "data" / "logs"
 SUPERVISOR_LOG = LOG_DIR / "supervisor.log"
@@ -120,7 +124,6 @@ def _handle_signal(sig, frame):
     RUNNING = False
 
 def main():
-    global RUNNING
     _preflight_checks()
     ok, msg = health_check()
     if not ok:

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TOBU | Jobs Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary": "#2f148c",
+                        "surface-container": "#18171d",
+                        "inverse-on-surface": "#313030",
+                        "secondary": "#c8c6c5",
+                        "surface-container-low": "#141318",
+                        "surface-container-lowest": "#0a0a0d",
+                        "primary-fixed": "#e5deff",
+                        "surface": "#0d0c11",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-variant": "#2a2832",
+                        "surface-dim": "#0d0c11",
+                        "on-primary-fixed-variant": "#4632a2",
+                        "tertiary-container": "#cca81c",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#eac33a",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#1b1b1c",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#1a0063",
+                        "on-primary-container": "#32198f",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#35323d",
+                        "background": "#0d0c11",
+                        "on-tertiary-fixed-variant": "#564500",
+                        "on-tertiary-fixed": "#231b00",
+                        "secondary-container": "#474746",
+                        "tertiary-fixed": "#ffe080",
+                        "primary-fixed-dim": "#c9bfff",
+                        "on-tertiary": "#3c2f00",
+                        "tertiary-fixed-dim": "#e9c33a",
+                        "surface-tint": "#c9bfff",
+                        "surface-bright": "#3a3845",
+                        "on-secondary-container": "#b7b5b4",
+                        "on-surface-variant": "#c9c4d5",
+                        "primary-container": "#4632a2",
+                        "on-tertiary-container": "#4e3e00",
+                        "outline": "#8e899c",
+                        "on-surface": "#e6e1e9",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary": "#c9bfff",
+                        "inverse-primary": "#5e4dbb",
+                        "error-container": "#93000a",
+                        "surface-container-high": "#23212b",
+                        "on-secondary": "#303030",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-background": "#e6e1e9",
+                        "outline-variant": "#484552"
+                    },
+                    fontFamily: {
+                        "headline": ["IBM Plex Sans"],
+                        "body": ["IBM Plex Sans"],
+                        "label": ["IBM Plex Sans"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0a0d; }
+        ::-webkit-scrollbar-thumb { background: #23212b; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c9bfff; }
+        .data-mono { font-family: 'JetBrains Mono', monospace; }
+        .aether-glow { text-shadow: 0 0 10px rgba(201, 191, 255, 0.4); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full sticky top-0 z-40 bg-surface h-12 px-4 border-b border-outline-variant/10">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-primary font-black tracking-tighter uppercase text-[15px] aether-glow">TOBU</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-outline hover:text-primary font-medium uppercase tracking-wider text-[11px] transition-all duration-200" href="#">Overview</a>
+<a class="text-primary border-b border-primary font-medium uppercase tracking-wider text-[11px] transition-all duration-200 pb-0.5" href="#">Jobs</a>
+<a class="text-outline hover:text-primary font-medium uppercase tracking-wider text-[11px] transition-all duration-200" href="#">Metrics</a>
+<a class="text-outline hover:text-primary font-medium uppercase tracking-wider text-[11px] transition-all duration-200" href="#">Config</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-lowest border border-outline-variant/30 text-[11px] font-mono w-64 h-7 px-8 rounded-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface" placeholder="QUERY JOBS..." type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1.5 text-outline text-[14px]">search</span>
+<span class="absolute right-2 top-1.5 text-[9px] text-outline opacity-50 font-mono">⌘P</span>
+</div>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">notifications</span>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">help_outline</span>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Pane: Side Navigation Rail -->
+<aside class="flex flex-col bg-surface-container-lowest border-r border-outline-variant/10 w-14 items-center py-4 z-50">
+<div class="flex flex-col gap-2 w-full flex-1">
+<div class="flex items-center justify-center w-full py-3 text-outline hover:text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-outline hover:text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined">folder_open</span>
+</div>
+<div class="relative flex items-center justify-center w-full py-3 bg-surface-container-high text-primary before:absolute before:left-0 before:w-[2px] before:h-6 before:bg-primary group cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-outline hover:text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined">input</span>
+</div>
+<div class="flex items-center justify-center w-full py-3 text-outline hover:text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined">movie</span>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-center justify-center w-full py-3 text-outline hover:text-on-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<div class="flex items-center justify-center w-full py-4">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHX1xpBP-AxEhjGG3OxxYfs-WX8Km1pjiFKAWULEWj5Z1KyoDr0avfW2XIQoL5sdIJGGaGjQ8CYl-D4ssGs4QnNkjgA_sfUvycu5wtfoZmJwdwMLYWSbOmY0ENABaMyjs-uNmBA9cebtml4iImMwIuKRITGOpILUFStWFqVC-7WYEQijJn-MXnMj0Mw5L7j96Yzsl8MTwfXmmrA1WbrXJg7dpA7aU0WPGRIfzCqh5FH4G87EE10rRDqM-cJ-AdTBd-tDFwDWy4HcI"/>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area (Central Pane) -->
+<main class="flex-1 flex overflow-hidden bg-surface">
+<!-- Content List (Table View) -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<!-- Breadcrumbs / Header Action Bar -->
+<div class="h-10 border-b border-outline-variant/10 flex items-center justify-between px-6 bg-surface-container-lowest/50">
+<div class="flex items-center gap-2 text-[10px] data-mono text-outline uppercase tracking-wider">
+<span>SYSTEM</span>
+<span class="opacity-30">/</span>
+<span class="text-primary font-bold">JOB_QUEUE</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1 bg-surface-container-high text-on-surface text-[10px] font-bold uppercase tracking-widest border border-outline-variant/20 rounded-sm hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[14px]">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-3 py-1 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest rounded-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">add</span>
+                            New Job
+                        </button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Metrics Bar -->
+<div class="grid grid-cols-4 gap-0 border-b border-outline-variant/10">
+<div class="p-4 border-r border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<div class="text-[9px] data-mono text-outline uppercase mb-1 tracking-widest">Active Nodes</div>
+<div class="text-xl data-mono font-bold text-primary">128</div>
+<div class="mt-2 h-0.5 bg-surface-container-highest w-full overflow-hidden">
+<div class="h-full bg-primary w-[65%]"></div>
+</div>
+</div>
+<div class="p-4 border-r border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<div class="text-[9px] data-mono text-outline uppercase mb-1 tracking-widest">Success Rate</div>
+<div class="text-xl data-mono font-bold text-on-surface">99.4%</div>
+<div class="mt-2 text-[9px] data-mono text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">trending_up</span> +0.2%
+                            </div>
+</div>
+<div class="p-4 border-r border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
+<div class="text-[9px] data-mono text-outline uppercase mb-1 tracking-widest">Avg Latency</div>
+<div class="text-xl data-mono font-bold text-on-surface">142ms</div>
+<div class="mt-2 text-[9px] data-mono text-outline-variant">Target: &lt; 200ms</div>
+</div>
+<div class="p-4 hover:bg-surface-container-low transition-colors group">
+<div class="text-[9px] data-mono text-outline uppercase mb-1 tracking-widest">Queue Depth</div>
+<div class="text-xl data-mono font-bold text-error">1.2k</div>
+<div class="mt-2 text-[9px] data-mono text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">warning</span> Load Spike
+                            </div>
+</div>
+</div>
+<!-- High Density Table -->
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface z-10">
+<tr class="bg-surface-container-lowest border-b border-outline-variant/20">
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em]">ID</th>
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em]">Source</th>
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em]">Status</th>
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em]">Progress</th>
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em]">Stage</th>
+<th class="px-6 py-2.5 data-mono text-[9px] text-outline uppercase tracking-[0.2em] text-right">Ops</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 (Active/Selected) -->
+<tr class="bg-surface-container-low border-l-2 border-primary group cursor-pointer">
+<td class="px-6 py-3 data-mono text-[11px] text-primary">#JOB-29402</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[16px]">description</span>
+<span class="text-[11px] font-medium">media_ingest_01.mp4</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<div class="w-1 h-1 rounded-full bg-primary animate-pulse"></div>
+<span class="data-mono text-[10px] uppercase text-on-surface">Running</span>
+</div>
+</td>
+<td class="px-6 py-3 w-48">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between data-mono text-[9px] text-outline">
+<span>78%</span>
+<span>1.2GB/1.5GB</span>
+</div>
+<div class="h-0.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[78%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<span class="bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded text-[9px] data-mono font-bold">ENCODING</span>
+</td>
+<td class="px-6 py-3 text-right">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer border-l-2 border-transparent">
+<td class="px-6 py-3 data-mono text-[11px] text-outline group-hover:text-on-surface">#JOB-29401</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[16px]">database</span>
+<span class="text-[11px] font-medium text-on-surface/80">analytics_batch_q4.sql</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<div class="w-1 h-1 rounded-full bg-outline/40"></div>
+<span class="data-mono text-[10px] uppercase text-outline">Queued</span>
+</div>
+</td>
+<td class="px-6 py-3 w-48">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between data-mono text-[9px] text-outline">
+<span>0%</span>
+<span>Pending</span>
+</div>
+<div class="h-0.5 bg-surface-container-highest rounded-full"></div>
+</div>
+</td>
+<td class="px-6 py-3">
+<span class="bg-surface-container-high text-outline px-1.5 py-0.5 rounded text-[9px] data-mono">VALIDATION</span>
+</td>
+<td class="px-6 py-3 text-right">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer border-l-2 border-transparent">
+<td class="px-6 py-3 data-mono text-[11px] text-outline group-hover:text-on-surface">#JOB-29399</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[16px]">image</span>
+<span class="text-[11px] font-medium text-on-surface/80">hero_assets_archive.zip</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-1.5">
+<div class="w-1 h-1 rounded-full bg-error"></div>
+<span class="data-mono text-[10px] uppercase text-error">Failed</span>
+</div>
+</td>
+<td class="px-6 py-3 w-48">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between data-mono text-[9px] text-error">
+<span>42%</span>
+<span>Checksum Error</span>
+</div>
+<div class="h-0.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error w-[42%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<span class="bg-error-container/20 text-error border border-error/20 px-1.5 py-0.5 rounded text-[9px] data-mono font-bold">EXTRACTION</span>
+</td>
+<td class="px-6 py-3 text-right">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer/Pagination -->
+<div class="h-10 border-t border-outline-variant/10 flex items-center justify-between px-6 bg-surface-container-lowest">
+<span class="data-mono text-[9px] text-outline uppercase tracking-widest">Displaying 24 of 128 active nodes</span>
+<div class="flex gap-1">
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-low text-outline hover:text-primary transition-colors rounded border border-outline-variant/10">
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center bg-primary text-on-primary text-[9px] data-mono rounded">1</button>
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-low text-outline hover:text-primary transition-colors rounded border border-outline-variant/10">
+<span class="data-mono text-[9px]">2</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center bg-surface-container-low text-outline hover:text-primary transition-colors rounded border border-outline-variant/10">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Resizer -->
+<div class="w-[1px] bg-outline-variant/20 hover:bg-primary hover:w-[2px] transition-all cursor-col-resize group relative flex-shrink-0">
+<div class="absolute inset-y-0 -left-1 w-2"></div>
+</div>
+<!-- Right Side Pane: Job Inspector -->
+<div class="w-[400px] bg-surface-container-lowest border-l border-outline-variant/10 flex flex-col overflow-hidden">
+<!-- Inspector Header -->
+<div class="h-10 border-b border-outline-variant/10 flex items-center justify-between px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">analytics</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Job Inspector</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-primary cursor-pointer">open_in_new</span>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-primary cursor-pointer">close</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Preview Visual -->
+<div class="aspect-video bg-black relative group overflow-hidden border-b border-outline-variant/10">
+<img class="w-full h-full object-cover opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8d_ruBdOm2PIekDEV3aSLlPWL1wJ7ZYbRIKDh10k1x2wy5cye5KMDKfsVK7YcGEI4xQv8YDd4tCuLrOyfvJYcCWWTqYE-AMpHL6MvID08b_1QGqnOFS-lVxYDf0FP2ri-4pUBpBGBoWHktF0oCQxcZkZpZ1ZfLdtf8UB9e-IwPOyLJRtlBU9d6ij6dsdNyQk9d28JX-nvwL4-08XAf3eZ-S_qNgZBBtccSWLv6d0gSx4RgcnMcgfOQAn5elSwu5OpNgDwggPYo3c"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/30 group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black/80 to-transparent">
+<div class="h-0.5 w-full bg-surface-container-highest mb-1">
+<div class="h-full bg-primary w-3/4"></div>
+</div>
+<div class="flex justify-between text-[8px] data-mono text-outline">
+<span>00:42:15</span>
+<span>01:05:00</span>
+</div>
+</div>
+</div>
+<!-- Analysis Log -->
+<div class="p-4 space-y-4">
+<h4 class="text-[10px] font-bold uppercase tracking-widest text-primary border-b border-outline-variant/10 pb-2">Analysis Pipeline</h4>
+<div class="space-y-3">
+<div class="group cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[9px] data-mono text-primary font-bold">14:10 - 18:22</span>
+<span class="text-[8px] data-mono bg-primary text-on-primary px-1.5 py-0.5 rounded-sm">Encoding</span>
+</div>
+<p class="text-[11px] text-on-surface/80 leading-relaxed border-l border-primary/40 pl-3">
+                                    Transcoding source stream to H.264 High Profile. Bitrate: 4500kbps.
+                                </p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-sm border border-outline-variant/20">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[9px] data-mono text-primary font-bold">18:23 - Current</span>
+<span class="text-[8px] data-mono text-outline px-1.5 py-0.5 bg-surface-container-high rounded-sm">Validation</span>
+</div>
+<p class="text-[11px] text-on-surface leading-relaxed border-l border-primary pl-3">
+                                    Running checksum verification against S3-origin bucket. Metadata extraction pending.
+                                </p>
+</div>
+</div>
+<!-- Technical Specs -->
+<div class="mt-6 pt-4 border-t border-outline-variant/10">
+<h4 class="text-[9px] font-bold uppercase tracking-widest text-outline mb-3">Runtime Parameters</h4>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-surface-container-low p-2 border border-outline-variant/10">
+<span class="block text-[8px] text-outline data-mono uppercase mb-0.5">Instance</span>
+<span class="text-[10px] data-mono text-on-surface">t3.large-04</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10">
+<span class="block text-[8px] text-outline data-mono uppercase mb-0.5">Region</span>
+<span class="text-[10px] data-mono text-on-surface">us-east-1</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10">
+<span class="block text-[8px] text-outline data-mono uppercase mb-0.5">Memory</span>
+<span class="text-[10px] data-mono text-on-surface">6.8GB / 8GB</span>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant/10">
+<span class="block text-[8px] text-outline data-mono uppercase mb-0.5">CPU Load</span>
+<span class="text-[10px] data-mono text-on-surface">84.2%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer Shell -->
+<footer class="h-6 border-t border-outline-variant/10 flex items-center justify-between px-4 bg-surface-container-lowest z-40 relative">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(201,191,255,0.4)]"></div>
+<span class="data-mono text-[9px] text-primary uppercase font-bold">System: Optimal</span>
+</div>
+<span class="data-mono text-[9px] uppercase text-outline">Latency: 14ms</span>
+<span class="data-mono text-[9px] uppercase text-outline">Build 2023.10.12-STABLE</span>
+</div>
+<div class="flex items-center gap-4">
+<a class="data-mono text-[9px] uppercase text-outline hover:text-primary transition-colors" href="#">Terminal</a>
+<a class="data-mono text-[9px] uppercase text-outline hover:text-primary transition-colors" href="#">Output</a>
+<a class="data-mono text-[9px] uppercase text-outline hover:text-primary transition-colors" href="#">Debug</a>
+</div>
+</footer>
+</body></html>

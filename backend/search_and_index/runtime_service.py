@@ -4,10 +4,10 @@ import sqlite3
 import time
 
 if __package__:
-    from .aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
-    from .document_engine import process_pdf, process_file
-    from .semantic_engine import save_to_vector_db, save_summary_vector, semantic_search
-    from .sql_database import (
+    from backend.search_and_index.aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
+    from backend.search_and_index.document_engine import process_pdf, process_file
+    from backend.search_and_index.semantic_engine import save_to_vector_db, save_summary_vector, semantic_search
+    from backend.search_and_index.sql_database import (
         DATABASE_PATH,
         fetch_next_job,
         get_job_retries,
@@ -19,8 +19,8 @@ if __package__:
         should_process,
         update_job_status,
     )
-    from .summarizer import summary_generator
-    from .visual_engine import index_video_visually
+    from backend.search_and_index.summarizer import summary_generator
+    from backend.search_and_index.visual_engine import index_video_visually
 else:
     from aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
     from document_engine import process_pdf, process_file
@@ -119,6 +119,7 @@ def process_job(job):
     path = job["file_path"]
 
     def job_progress(stage, pct):
+        print(f"[TOBU] Job {job_id}: {stage} ({pct}%)")
         update_job_status(job_id, "running", stage=stage, progress=pct)
 
     try:
@@ -161,7 +162,7 @@ def worker_loop(poll_interval=1.0, stop_flag=None):
 
 
 def _result_key(item):
-    file_path = os.path.abspath(item.get("file-path", ""))
+    file_path = os.path.abspath(item.get("file_path", ""))
     start = item.get("start")
     end = item.get("end")
     text = (item.get("text") or "").strip()
@@ -223,7 +224,7 @@ def _passes_filters(item, source_types, folder_prefixes, date_from_dt, date_to_d
             return False
 
     if folder_prefixes:
-        p = os.path.abspath(item.get("file-path", ""))
+        p = os.path.abspath(item.get("file_path", ""))
         if not any(p.startswith(prefix) for prefix in folder_prefixes):
             return False
 
@@ -262,14 +263,14 @@ def hybrid_search_rrf(
         key = _result_key(item)
         if key not in payload:
             payload[key] = {
-                "file-name": item.get("file-name"),
-                "file-path": os.path.abspath(item.get("file-path", "")),
+                "file_name": item.get("file_name"),
+                "file_path": os.path.abspath(item.get("file_path", "")),
                 "start": item.get("start"),
                 "end": item.get("end"),
                 "text": item.get("text"),
             }
 
-    meta_map = _load_meta_by_paths([v["file-path"] for v in payload.values()])
+    meta_map = _load_meta_by_paths([v["file_path"] for v in payload.values()])
 
     normalized_source_types = set((s or "").lower() for s in (source_types or []))
     normalized_folders = [os.path.abspath(f) for f in (folders or [])]
@@ -279,7 +280,7 @@ def hybrid_search_rrf(
     merged = []
     for key, base in payload.items():
         source_ranks = ranks.get(key, {})
-        meta = meta_map.get(base["file-path"], {})
+        meta = meta_map.get(base["file_path"], {})
 
         row = {
             **base,

@@ -1,30 +1,60 @@
 import ffmpeg
 import json
-from faster_whisper import WhisperModel #needs cuda_12 toolkit for gpu
 import os
 import uuid
 import torch
-
+import sys
+from faster_whisper import WhisperModel
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
-TEMP_DIR = os.path.join(PROJECT_ROOT, "data", "temp")
 
-
-if torch.cuda.is_available():
-    device = "cuda"
-    compute = "int8"
+if getattr(sys, 'frozen', False):
+    PROJECT_ROOT = os.path.expanduser("~/.tobu")
+    os.makedirs(PROJECT_ROOT, exist_ok=True)
 else:
-    device = "cpu"
-    compute = "int8"
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 
-WHISPER_MODEL = WhisperModel("distil-large-v3", device=device, compute_type=compute)
+TEMP_DIR = os.path.join(PROJECT_ROOT, "data", "temp")
+MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
+MODEL_WHISPER_PATH = os.path.join(MODEL_DIR, "whisper-distil-large-v3")
+
+# Lazy load model
+_WHISPER_MODEL = None
+
+def get_whisper():
+    global _WHISPER_MODEL
+    if _WHISPER_MODEL is None:
+        if torch.cuda.is_available():
+            device = "cuda"
+            compute = "int8"
+        else:
+            device = "cpu"
+            compute = "int8"
+        
+        # Check if local model exists
+        if os.path.exists(MODEL_WHISPER_PATH):
+            model_to_load = MODEL_WHISPER_PATH
+            print(f"Loading local Whisper model from {MODEL_WHISPER_PATH}...")
+        else:
+            model_to_load = "distil-large-v3"
+            print(f"Loading Whisper model {model_to_load} (may download if not cached)...")
+
+        try:
+            _WHISPER_MODEL = WhisperModel(model_to_load, device=device, compute_type=compute)
+        except Exception as e:
+            print(f"Error loading Whisper model: {e}")
+            # Fallback to CPU if CUDA fails
+            if device == "cuda":
+                print("Falling back to CPU...")
+                _WHISPER_MODEL = WhisperModel(model_to_load, device="cpu", compute_type="int8")
+            else:
+                raise e
+    return _WHISPER_MODEL
 
 
 
 def extract_audio(input_path, output_path=None):
     """converts to 16kHz mono WAV."""
-
     if output_path is None:
         output_path = os.path.join(TEMP_DIR, f"temp_{uuid.uuid4().hex}.wav")
     
@@ -52,9 +82,8 @@ def transcribe_audio(input_path, output_path=None):
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    
-
-    segments, info = WHISPER_MODEL.transcribe(input_path, beam_size=5,vad_filter=True)
+    model = get_whisper()
+    segments, info = model.transcribe(input_path, beam_size=5, vad_filter=True)
     
     transcript = []
     for segment in segments:
@@ -65,7 +94,6 @@ def transcribe_audio(input_path, output_path=None):
         })
 
     with open(output_path, "w", encoding="utf-8") as f:
-
         json.dump(transcript, f, indent=2, ensure_ascii=False)
 
     print(f"Transcript saved to {output_path}")
@@ -73,11 +101,10 @@ def transcribe_audio(input_path, output_path=None):
 
 
 def get_file_name(path):
-    file_name = os.path.basename(path)
-    return file_name
+    return os.path.basename(path)
 
 
 def get_duration(path):
     probe = ffmpeg.probe(path)
-    duration = float(probe["format"]["duration"])
-    return duration
+    return float(probe["format"]["duration"])
+

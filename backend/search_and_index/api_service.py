@@ -2,14 +2,14 @@ from typing import List, Optional, Dict, Any
 import os
 
 if __package__:
-    from . import sql_database
+    from backend.search_and_index import sql_database
 else:
     import sql_database
 
 
 def _get_runtime_service():
     if __package__:
-        from . import runtime_service as _runtime_service
+        from backend.search_and_index import runtime_service as _runtime_service
     else:
         import runtime_service as _runtime_service
     return _runtime_service
@@ -17,7 +17,7 @@ def _get_runtime_service():
 
 def _get_raw_semantic_search():
     if __package__:
-        from .semantic_engine import semantic_search as _raw_semantic_search
+        from backend.search_and_index.semantic_engine import semantic_search as _raw_semantic_search
     else:
         from semantic_engine import semantic_search as _raw_semantic_search
     return _raw_semantic_search
@@ -25,8 +25,8 @@ def _get_raw_semantic_search():
 #converts to api standard 
 def normalize_result_item(item: Dict[Any, Any]) -> Dict[str, Any]:
     return {
-        "file_name": item.get("file_name") or item.get("file-name"),
-        "file_path": item.get("file_path") or item.get("file-path"),
+        "file_name": item.get("file_name"),
+        "file_path": item.get("file_path"),
         "start": item.get("start"),
         "end": item.get("end"),
         "text": item.get("text"),
@@ -135,3 +135,16 @@ def run_integrity_check() -> Dict[str, Any]:
 
 def create_backup(label: Optional[str] = None) -> Dict[str, Any]:
     return sql_database.create_backup(label=label)
+
+def get_onboarding_status() -> bool:
+    val = sql_database.get_setting("onboarding_completed", "false")
+    return val.lower() == "true"
+
+def set_onboarding_completed(completed: bool):
+    sql_database.set_setting("onboarding_completed", "true" if completed else "false")
+
+def get_app_setting(key: str, default: Any = None) -> Any:
+    return sql_database.get_setting(key, default)
+
+def set_app_setting(key: str, value: Any):
+    sql_database.set_setting(key, value)

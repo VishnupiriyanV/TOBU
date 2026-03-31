@@ -6,19 +6,33 @@ import pandas as pd
 import os
 
 if __package__:
-    from .model_downloader import MODEL_SEMANTIC_PATH
+    from backend.search_and_index.model_downloader import MODEL_SEMANTIC_PATH
 else:
     from model_downloader import MODEL_SEMANTIC_PATH
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+if getattr(sys, 'frozen', False):
+    import os
+    PROJECT_ROOT = os.path.expanduser("~/.tobu")
+    os.makedirs(PROJECT_ROOT, exist_ok=True)
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 VECTOR_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "vector_data")
 
-# Load model in offline mode
-MODEL = SentenceTransformer(
-    MODEL_SEMANTIC_PATH,
-    model_kwargs={"local_files_only": True}
-)
+# Lazy load model
+_MODEL = None
+
+def get_model():
+    global _MODEL
+    if _MODEL is None:
+        if not os.path.exists(MODEL_SEMANTIC_PATH):
+            raise RuntimeError(f"Semantic model not found at {MODEL_SEMANTIC_PATH}. Please run onboarding.")
+        _MODEL = SentenceTransformer(
+            MODEL_SEMANTIC_PATH,
+            model_kwargs={"local_files_only": True}
+        )
+    return _MODEL
 
 
 def _delete_rows_by_media_id(table, media_id):
@@ -27,8 +41,7 @@ def _delete_rows_by_media_id(table, media_id):
 
 #converts text to embedding
 def embed(sentences):
-    
-    embeddings = MODEL.encode(sentences)
+    embeddings = get_model().encode(sentences)
     return embeddings.tolist()
     
 
@@ -98,6 +111,8 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
 def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
+    if "semantic_segments" not in db.table_names():
+        return []
     table = db.open_table("semantic_segments")
 
     query_vector = embed([query])[0]
@@ -107,8 +122,8 @@ def semantic_search(query, limit, db_path=VECTOR_DB_PATH):
     formatted_results = []
     for _, r in results.iterrows():
         formatted_results.append({
-            "file-name": r["file_name"],
-            "file-path": r["file_path"],
+            "file_name": r["file_name"],
+            "file_path": r["file_path"],
             "start": r["start"],
             "end": r.get("end", r["start"]), 
             "text": r["text"],
@@ -140,6 +155,8 @@ def save_summary_vector(media_id,file_name,summary,db_path = VECTOR_DB_PATH):
 
 def file_search(query,limit=5,db_path=VECTOR_DB_PATH):
     db = lancedb.connect(db_path)
+    if "summary_segments" not in db.table_names():
+        return []
     table = db.open_table("summary_segments")
     
     query_vector = embed([query])[0]

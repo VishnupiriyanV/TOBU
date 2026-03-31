@@ -8,7 +8,13 @@ import lancedb
 
 
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
+import sys
+if getattr(sys, 'frozen', False):
+    # When packaged via PyInstaller, route all data to ~/.tobu
+    PROJECT_ROOT = os.path.expanduser("~/.tobu")
+    os.makedirs(PROJECT_ROOT, exist_ok=True)
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(MODULE_DIR, "..", ".."))
 DB_DIR = os.path.join(PROJECT_ROOT, "data", "database")
 DATABASE_PATH = os.path.join(DB_DIR, "brain.db")
 os.makedirs(DB_DIR, exist_ok=True)
@@ -71,15 +77,25 @@ def initialize_db():
         """
 
 
+        settings_create_table = """
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        );
+        """
+
         cursor = connection.cursor()
-
-
 
         try:
             cursor.execute(mediaFiles_create_table)
             cursor.execute(transcript_fts)
             cursor.execute(jobs_create_table)
             cursor.execute(jobs_status_index)
+            cursor.execute(settings_create_table)
+            
+            # Initial onboarding status
+            cursor.execute("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('onboarding_completed', 'false')")
+            
             connection.commit()
         except Exception as e:
             print(f"Database init error: {e}")
@@ -190,8 +206,8 @@ def search_to_json(query):
         results = []
         for row in rows:
             results.append({
-                "file-name": row["file_name"],
-                "file-path": os.path.abspath(row["file_path"]), 
+                "file_name": row["file_name"],
+                "file_path": os.path.abspath(row["file_path"]), 
                 "start": row["location_start"],
                 "end": row["location_end"],
                 "text": row["text"],
@@ -261,6 +277,66 @@ def delete_file_records(file_path):
         cursor.execute("DELETE FROM media_files WHERE id = ?", (media_id,))
         connection.commit()
         print(f"Removed from index: {file_path}")
+
+def remove_workspace_folder(folder_path):
+    """Safely remove app data for all files prefixed with the folder path."""
+    normalized = os.path.abspath(folder_path)
+    prefix = normalized + os.sep
+    
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT id, file_path FROM media_files WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
+        rows = cursor.fetchall()
+        
+        if not rows:
+            return {"embeddings": 0, "transcripts": 0, "index_entries": 0}
+            
+        media_ids = [r[0] for r in rows]
+        media_ids_str = ",".join(map(str, media_ids))
+        
+        cursor.execute(f"SELECT COUNT(*) FROM transcripts_fts WHERE media_id IN ({media_ids_str})")
+        transcripts_count = cursor.fetchone()[0]
+        
+        index_entries_count = len(media_ids)
+        embeddings_count = 0
+        
+        try:
+            db = lancedb.connect(VECTOR_DB_PATH)
+            for table_name in ("semantic_segments", "summary_segments", "visual_moments"):
+                if table_name in db.table_names():
+                    table = db.open_table(table_name)
+                    # For metrics, we can query it first using an index/map or estimate. In LanceDB, count is not always O(1).
+                    try:
+                       res = table.search().where(f"media_id IN ({media_ids_str})")
+                       if hasattr(res, 'to_arrow'):
+                         embeddings_count += len(res.to_arrow())
+                    except Exception:
+                       pass # Fallback if search fails
+                    table.delete(f"media_id IN ({media_ids_str})")
+        except Exception as e:
+            print(f"Vector cleanup error for {folder_path}: {e}")
+            
+        if os.path.isdir(THUMBNAIL_PATH):
+            for m_id in media_ids:
+                prefix_thumb = f"{m_id}_"
+                for name in os.listdir(THUMBNAIL_PATH):
+                    if name.startswith(prefix_thumb):
+                        try:
+                            os.remove(os.path.join(THUMBNAIL_PATH, name))
+                        except Exception:
+                            pass
+                            
+        cursor.execute(f"DELETE FROM transcripts_fts WHERE media_id IN ({media_ids_str})")
+        cursor.execute(f"DELETE FROM media_files WHERE id IN ({media_ids_str})")
+        
+        cursor.execute("UPDATE indexing_jobs SET status = 'cancelled' WHERE file_path = ? OR file_path LIKE ?", (normalized, prefix + '%'))
+        connection.commit()
+        
+        return {
+            "embeddings": embeddings_count,
+            "transcripts": transcripts_count,
+            "index_entries": index_entries_count
+        }
 
 def save_doc_to_db(file_path, file_name, segments, source_type="note", summary=None, current_hash=None):
     return save_to_db(
@@ -630,3 +706,19 @@ def create_backup(label=None):
         "vector_copied": os.path.isdir(vector_dst),
         "thumbnails_copied": os.path.isdir(thumbs_dst),
     }
+
+def get_setting(key, default=None):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT value FROM app_settings WHERE key = ?", (key,))
+        row = cursor.fetchone()
+        return row[0] if row else default
+
+def set_setting(key, value):
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, str(value)),
+        )
+        connection.commit()
