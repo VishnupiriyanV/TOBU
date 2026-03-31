@@ -22,13 +22,29 @@ datas_list += collect_data_files('cv2')
 if os.path.exists('models'):
     datas_list.append(('models', 'models'))
 
-binaries_list = []
-# Explicitly collect ctranslate2 dynamic libs (DLLs)
-binaries_list += collect_dynamic_libs('ctranslate2')
+# --- GPU DEPENDENCY COLLECTION ---
+# Automate inclusion of NVIDIA GPU dependencies (cuBLAS and cuDNN)
+# This implements the logic from GPU_TRANSCRIBTION_TEMPORARY_FIX.md automatically
+binaries_list = collect_dynamic_libs('ctranslate2')
 
-# Also handle those tricky NVIDIA DLLs if they are in site-packages
-# PyInstaller usually finds them if they are in the PATH or site-packages root,
-# but faster-whisper/ctranslate2 needs them specifically.
+for pkg_name in ['nvidia.cublas', 'nvidia.cudnn']:
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec(pkg_name)
+        if spec and spec.submodule_search_locations:
+            # handle namespace packages
+            pkg_root = list(spec.submodule_search_locations)[0] 
+            bin_dir = os.path.join(pkg_root, 'bin')
+            if os.path.exists(bin_dir):
+                for f in os.listdir(bin_dir):
+                    if f.endswith('.dll'):
+                        dll_path = os.path.join(bin_dir, f)
+                        # Place directly in the root distribution folder
+                        binaries_list.append((dll_path, '.'))
+                        print(f"[TOBU BUILD] Found GPU dependency: {f}")
+    except (Exception, ImportError) as e:
+        print(f"[TOBU BUILD] Warning: Could not collect {pkg_name} DLLs: {e}")
+# ---------------------------------
 
 a = Analysis(
     ['tobu_launcher.py'],
