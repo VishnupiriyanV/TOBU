@@ -22,6 +22,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   const doSearch = useCallback(async () => {
     if (!query.trim()) return;
@@ -38,6 +39,7 @@ export default function SearchPage() {
         data = await searchKeyword(query);
       }
       setResults(data);
+      setShowAll(false); // Reset on new search
     } catch (err) {
       const rawMsg = err.response?.data?.error?.message || err.response?.data?.detail || err.message || 'Search failed';
       const status = err.response?.status;
@@ -57,7 +59,21 @@ export default function SearchPage() {
     if (e.key === 'Enter') doSearch();
   };
 
-  const items = results?.items || [];
+  const allItems = results?.items || [];
+
+  // Decide threshold based on search mode
+  // Hybrid/Keyword score higher is better (RRF). Semantic distance lower is better.
+  const threshold = mode === 'semantic' ? 1.0 : 0.01;
+
+  const highItems = allItems.filter(item =>
+    mode === 'semantic' ? item.score < threshold : item.score >= threshold
+  );
+  const lowItems = allItems.filter(item =>
+    mode === 'semantic' ? item.score >= threshold : item.score < threshold
+  );
+
+  const displayedItems = showAll ? allItems : highItems;
+  const hasHidden = lowItems.length > 0 && !showAll;
 
   return (
     <div className="search-page">
@@ -122,7 +138,7 @@ export default function SearchPage() {
             </div>
           )}
 
-          {items.map((item, idx) => {
+          {displayedItems.map((item, idx) => {
             const fi = fileIcon(item.source_type, item.file_name || item.file_path);
             const isSelected = selected === idx;
             return (
@@ -156,13 +172,35 @@ export default function SearchPage() {
               </div>
             );
           })}
+
+          {hasHidden && (
+            <div className="search-show-more-area">
+              <div className="search-relevancy-divider">
+                <span>Potential Matches Hidden</span>
+              </div>
+              <button
+                className="search-show-more-btn"
+                onClick={() => setShowAll(true)}
+              >
+                <span className="material-symbols-outlined">expand_more</span>
+                Show {lowItems.length} more results with lower relevancy
+              </button>
+            </div>
+          )}
+
+          {!loading && results && allItems.length === 0 && (
+            <div className="search-empty">
+              <span className="material-symbols-outlined" style={{ fontSize: 48, opacity: 0.15 }}>sentiment_dissatisfied</span>
+              <p>No results found for "{query}". Try a different term or keyword.</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Right Pane: Media Inspector */}
       <div className="search-inspector" style={{ overflow: 'hidden' }}>
-        {selected != null && items[selected] ? (
-          <UniversalInspector item={items[selected]} onClose={() => setSelected(null)} />
+        {selected != null && displayedItems[selected] ? (
+          <UniversalInspector item={displayedItems[selected]} onClose={() => setSelected(null)} />
         ) : (
           <div className="search-empty" style={{ padding: '40px 20px', height: '100%' }}>
             <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.15 }}>preview</span>

@@ -77,8 +77,9 @@ def save_to_vector_db(media_id, file_name, file_path, transcript_data, summary=N
 
     data = []
     for i in range(len(windowed_text_lists)):
-        location_start = transcript_data[i].get("start") or transcript_data[i].get("page")
-        location_end = transcript_data[i].get("end") or transcript_data[i].get("page")
+        # Force float to avoid LanceDB/Arrow schema mismatch between int (pages) and float (timestamps)
+        location_start = float(transcript_data[i].get("start") or transcript_data[i].get("page") or 0.0)
+        location_end = float(transcript_data[i].get("end") or transcript_data[i].get("page") or 0.0)
 
         data.append({
             "vector" : embeddings[i],

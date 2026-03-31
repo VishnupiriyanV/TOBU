@@ -383,6 +383,21 @@ def enqueue_job(file_path, source_type=None, max_retries=3):
         if recent:
             return recent[0], False
 
+        # Pre-check: If already indexed and hash hasn't changed, don't even enqueue.
+        # This prevents the job queue from filling up with "SKIPPED_UNCHANGED" entries.
+        if os.path.exists(normalized_path):
+            try:
+                current_hash = compute_file_hash(normalized_path)
+                cursor.execute(
+                    "SELECT file_hash FROM media_files WHERE file_path = ?", (normalized_path,)
+                )
+                row = cursor.fetchone()
+                if row and row[0] == current_hash:
+                    # File is already indexed and unchanged. 
+                    return -1, False
+            except Exception:
+                pass # Fallback to enqueuing if hash calculation fails
+
         cursor.execute(
             """
             INSERT INTO indexing_jobs (file_path, source_type, status, stage, progress, max_retries)
