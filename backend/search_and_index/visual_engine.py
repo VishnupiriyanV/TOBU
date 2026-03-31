@@ -121,8 +121,9 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
                 "vector": img_embedding,
                 "timestamp": timestamp,
                 "media_id": media_id,
-                "thumbnail_path" : full_thumb_path
-
+                "thumbnail_path": full_thumb_path,
+                "file_path": video_path,
+                "file_name": os.path.basename(video_path),
             })
 
             # after batch size save database

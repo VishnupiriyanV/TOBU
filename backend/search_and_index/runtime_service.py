@@ -20,7 +20,7 @@ if __package__:
         update_job_status,
     )
     from backend.search_and_index.summarizer import summary_generator
-    from backend.search_and_index.visual_engine import index_video_visually
+    from backend.search_and_index.visual_engine import index_video_visually, search_visual_moments
 else:
     from aural_engine import extract_audio, get_duration, get_file_name, transcribe_audio
     from document_engine import process_pdf, process_file
@@ -38,7 +38,7 @@ else:
         update_job_status,
     )
     from summarizer import summary_generator
-    from visual_engine import index_video_visually
+    from visual_engine import index_video_visually, search_visual_moments
 
 
 def process_media(path, progress_cb=None):
@@ -161,8 +161,27 @@ def worker_loop(poll_interval=1.0, stop_flag=None):
         process_job(job)
 
 
+def _lookup_media_path(media_id):
+    """Backward-compat: resolve file_path/file_name from SQLite for pre-fix indexed frames."""
+    if not media_id:
+        return "", ""
+    try:
+        with sqlite3.connect(DATABASE_PATH) as conn:
+            row = conn.execute(
+                "SELECT file_path, file_name FROM media_files WHERE id = ?",
+                (int(media_id),)
+            ).fetchone()
+            if row:
+                return row[0], row[1]
+    except Exception:
+        pass
+    return "", ""
+
+
 def _result_key(item):
     file_path = os.path.abspath(item.get("file_path", ""))
+    if item.get("result_type") == "visual":
+        return (file_path, "visual", item.get("timestamp"))
     start = item.get("start")
     end = item.get("end")
     text = (item.get("text") or "").strip()
@@ -242,6 +261,7 @@ def hybrid_search_rrf(
     limit=20,
     semantic_limit=40,
     keyword_limit=40,
+    visual_limit=10,
     k=60,
     source_types=None,
     folders=None,
@@ -252,14 +272,40 @@ def hybrid_search_rrf(
     sem_results = semantic_search(query, semantic_limit) or []
     kw_results = (search_to_json(query) or [])[:keyword_limit]
 
+    # --- Visual (CLIP frame) search leg ---
+    raw_visual = []
+    try:
+        raw_visual = search_visual_moments(query, limit=visual_limit) or []
+    except Exception as e:
+        print(f"[TOBU] Visual search failed (non-fatal): {e}")
+    vis_results = []
+    for r in raw_visual:
+        fp = r.get("file_path") or ""
+        fn = r.get("file_name") or ""
+        if not fp:  # backward compat: pre-fix indexed videos lack file_path
+            fp, fn = _lookup_media_path(r.get("media_id"))
+        vis_results.append({
+            "file_name": fn,
+            "file_path": fp,
+            "start": r.get("timestamp"),
+            "end": r.get("timestamp"),
+            "text": None,
+            "result_type": "visual",
+            "timestamp": r.get("timestamp"),
+            "thumbnail_path": r.get("thumbnail_path"),
+            "score": r.get("_distance", 0.0),
+        })
+    # --- End visual leg ---
+
     scores = {}
     ranks = {}
     payload = {}
 
     _rrf_add(scores, ranks, sem_results, "semantic", k)
     _rrf_add(scores, ranks, kw_results, "keyword", k)
+    _rrf_add(scores, ranks, vis_results, "visual", k)
 
-    for item in sem_results + kw_results:
+    for item in sem_results + kw_results + vis_results:
         key = _result_key(item)
         if key not in payload:
             payload[key] = {
@@ -268,6 +314,9 @@ def hybrid_search_rrf(
                 "start": item.get("start"),
                 "end": item.get("end"),
                 "text": item.get("text"),
+                "result_type": item.get("result_type"),
+                "timestamp": item.get("timestamp"),
+                "thumbnail_path": item.get("thumbnail_path"),
             }
 
     meta_map = _load_meta_by_paths([v["file_path"] for v in payload.values()])
@@ -288,6 +337,7 @@ def hybrid_search_rrf(
             "matched_by": list(source_ranks.keys()),
             "semantic_rank": source_ranks.get("semantic"),
             "keyword_rank": source_ranks.get("keyword"),
+            "visual_rank": source_ranks.get("visual"),
             "source_type": meta.get("source_type"),
             "added_at": meta.get("added_at"),
         }

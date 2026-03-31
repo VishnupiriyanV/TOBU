@@ -34,8 +34,12 @@ def normalize_result_item(item: Dict[Any, Any]) -> Dict[str, Any]:
         "matched_by": item.get("matched_by") or item.get("matched-by", []),
         "semantic_rank": item.get("semantic_rank"),
         "keyword_rank": item.get("keyword_rank"),
+        "visual_rank": item.get("visual_rank"),
         "source_type": item.get("source_type"),
-        "added_at": item.get("added_at")
+        "added_at": item.get("added_at"),
+        "result_type": item.get("result_type"),
+        "thumbnail_path": item.get("thumbnail_path"),
+        "timestamp": item.get("timestamp"),
     }
 
 def health_status() -> Dict[str, str]:
@@ -83,6 +87,15 @@ def search_semantic(query: str, limit: int) -> List[Dict[str, Any]]:
 def search_keyword(query: str) -> List[Dict[str, Any]]:
     results = sql_database.search_to_json(query) or []
     return [normalize_result_item(r) for r in results]
+
+
+def search_visual(query: str, limit: int) -> List[Dict[str, Any]]:
+    """Direct CLIP visual frame search — bypasses RRF, returns raw frame hits."""
+    if __package__:
+        from backend.search_and_index.visual_engine import search_visual_moments
+    else:
+        from visual_engine import search_visual_moments
+    return search_visual_moments(query, limit=limit) or []
 
 def ingest_file(file_path: str, source_type: Optional[str] = None, max_retries: int = 3) -> Dict[str, Any]:
     job_id, created = sql_database.enqueue_job(file_path, source_type, max_retries)
