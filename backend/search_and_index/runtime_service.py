@@ -120,10 +120,11 @@ def process_job(job):
 
     def job_progress(stage, pct):
         print(f"[TOBU] Job {job_id}: {stage} ({pct}%)")
-        update_job_status(job_id, "running", stage=stage, progress=pct)
+        # Convert integer percentage to fraction for API/UI consistency
+        update_job_status(job_id, "running", stage=stage, progress=pct / 100.0)
 
     try:
-        update_job_status(job_id, "running", stage="starting", progress=1)
+        update_job_status(job_id, "running", stage="starting", progress=0.01)
         result = process_media(path, progress_cb=job_progress)
 
         if result == "skipped":
@@ -131,21 +132,21 @@ def process_job(job):
                 job_id,
                 "done",
                 stage="skipped_unchanged",
-                progress=100,
+                progress=1.0,
                 error_message=None,
             )
         else:
-            update_job_status(job_id, "done", stage="finished", progress=100, error_message=None)
+            update_job_status(job_id, "done", stage="finished", progress=1.0, error_message=None)
 
     except Exception as e:
         increment_retry(job_id)
         retries, max_retries = get_job_retries(job_id)
 
         if retries < max_retries:
-            update_job_status(job_id, "queued", stage="retrying", progress=0, error_message=str(e))
+            update_job_status(job_id, "queued", stage="retrying", progress=0.0, error_message=str(e))
             requeue_job(job_id)
         else:
-            update_job_status(job_id, "failed", stage="failed", progress=0, error_message=str(e))
+            update_job_status(job_id, "failed", stage="failed", progress=0.0, error_message=str(e))
 
 
 def worker_loop(poll_interval=1.0, stop_flag=None):
