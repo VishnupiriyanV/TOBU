@@ -119,7 +119,7 @@ def index_video_visually(video_path, media_id, db_path=VECTOR_DB_PATH):
 
             frames_batch.append({
                 "vector": img_embedding,
-                "timestamp": timestamp,
+                "timestamp": float(timestamp),
                 "media_id": media_id,
                 "thumbnail_path" : full_thumb_path
 
