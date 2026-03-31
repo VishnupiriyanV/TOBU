@@ -429,5 +429,5 @@ MIT License — see [LICENSE](LICENSE) for details.
 - [Nishanth S](https://github.com/NishanthGit3)
 
 <div align="center">
-<sub>Built with ❤️ and passion.</sub>
+<sub>Built for the ❤️ love of the game.</sub>
 </div>
