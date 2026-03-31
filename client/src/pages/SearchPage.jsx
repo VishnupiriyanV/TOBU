@@ -1,16 +1,9 @@
 import { useState, useCallback } from 'react';
-import { searchHybrid, searchSemantic, searchKeyword, getMediaServeUrl } from '../api';
-import CustomPdfViewer from '../components/CustomPdfViewer';
+import { searchHybrid, searchSemantic, searchKeyword } from '../api';
+import UniversalInspector from '../components/UniversalInspector';
 import './SearchPage.css';
 
 const SEARCH_MODES = ['hybrid', 'semantic', 'keyword'];
-
-function formatTime(seconds) {
-  if (seconds == null) return '';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
 
 function fileIcon(sourceType, fileName) {
   if (sourceType === 'video' || /\.(mp4|mkv|avi|mov|webm)$/i.test(fileName || ''))
@@ -167,100 +160,18 @@ export default function SearchPage() {
       </div>
 
       {/* Right Pane: Media Inspector */}
-      <div className="search-inspector">
-        {selected != null && items[selected]?.file_path && fileIcon(items[selected].source_type, items[selected].file_name || items[selected].file_path).icon === 'picture_as_pdf' ? (
-          <CustomPdfViewer
-            fileUrl={getMediaServeUrl(items[selected].file_path)}
-            initialPage={items[selected]?.start && !isNaN(Number(items[selected].start)) ? Math.max(1, Math.floor(Number(items[selected].start))) : 1}
-            timestamp={items[selected].start}
-            onClose={() => setSelected(null)}
-          />
+      <div className="search-inspector" style={{ overflow: 'hidden' }}>
+        {selected != null && items[selected] ? (
+          <UniversalInspector item={items[selected]} onClose={() => setSelected(null)} />
         ) : (
-          <>
-            <div className="search-inspector-body">
-              {selected != null && items[selected] ? (
-                <InspectorContent item={items[selected]} />
-              ) : (
-                <div className="search-empty" style={{ padding: '40px 20px' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.15 }}>preview</span>
-                  <p>Select a result to inspect</p>
-                </div>
-              )}
-            </div>
-          </>
+          <div className="search-empty" style={{ padding: '40px 20px', height: '100%' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.15 }}>preview</span>
+            <p>Select a result to inspect</p>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function InspectorContent({ item }) {
-  const fi = fileIcon(item.source_type, item.file_name || item.file_path);
-  const fileName = item.file_name || item.file_path.split(/[/\\]/).pop();
-  const isVideo = fi.icon === 'video_library';
 
-  return (
-    <>
-      {/* Video preview placeholder */}
-      {isVideo && (
-        <div className="inspector-video-hero">
-          <div className="inspector-video-overlay">
-            <div className="inspector-play-btn">
-              <span className="material-symbols-outlined" style={{ fontSize: 32, fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-            </div>
-          </div>
-          {item.start != null && (
-            <div className="inspector-video-controls">
-              <div className="inspector-progress-bar">
-                <div className="inspector-progress-fill" style={{ width: '33%' }} />
-              </div>
-              <div className="inspector-time-labels font-mono">
-                <span>{formatTime(item.start)}</span>
-                <span>{item.end != null ? formatTime(item.end) : '--:--'}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Segment / Transcript */}
-      <div className="inspector-section">
-        <h4 className="inspector-section-title">Content Detail</h4>
-        <div className="inspector-segment">
-          <div className="inspector-segment-header">
-            <span className="font-mono" style={{color: 'var(--primary)', fontWeight: 700, fontSize: 10}}>
-              {item.start != null ? `${formatTime(item.start)} - ${formatTime(item.end)}` : 'Full Document'}
-            </span>
-            <span className="inspector-segment-badge">{item.source_type || 'file'}</span>
-          </div>
-          {item.text && <p className="inspector-segment-text">{item.text}</p>}
-        </div>
-      </div>
-
-      {/* Metadata */}
-      <div className="inspector-section">
-        <h4 className="inspector-section-title" style={{ color: 'var(--outline)' }}>Metadata</h4>
-        <div className="inspector-meta-grid">
-          <div className="inspector-meta-cell">
-            <span className="inspector-meta-key">File</span>
-            <span className="inspector-meta-value">{fileName}</span>
-          </div>
-          <div className="inspector-meta-cell">
-            <span className="inspector-meta-key">Score</span>
-            <span className="inspector-meta-value">{item.score?.toFixed(4)}</span>
-          </div>
-          <div className="inspector-meta-cell">
-            <span className="inspector-meta-key">Matched By</span>
-            <span className="inspector-meta-value">{item.matched_by?.join(', ') || '—'}</span>
-          </div>
-          {item.added_at && (
-            <div className="inspector-meta-cell">
-              <span className="inspector-meta-key">Added</span>
-              <span className="inspector-meta-value">{item.added_at}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}

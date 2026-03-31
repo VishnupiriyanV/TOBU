@@ -120,8 +120,8 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
     return combined;
   };
 
-  const fetchAndMergeTree = async () => {
-    setLoading(true);
+  const fetchAndMergeTree = async (isPolling = false) => {
+    if (!isPolling) setLoading(true);
     let bTree = null, lTree = [];
     try {
       const res = await fetch('http://127.0.0.1:8000/api/v1/system/file-tree');
@@ -133,12 +133,16 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
     } catch { /* ignore */ }
 
     setTreeData(mergeTrees(bTree, lTree));
-    setLoading(false);
+    if (!isPolling) setLoading(false);
     checkPermissions();
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchAndMergeTree(); }, []);
+  useEffect(() => { 
+    fetchAndMergeTree();
+    const id = setInterval(() => fetchAndMergeTree(true), 5000);
+    return () => clearInterval(id);
+  }, []);
 
   const saveLocalTree = (treeArr) => {
     const localNodes = treeArr.filter(n => n.source !== 'backend');
@@ -315,6 +319,9 @@ export default function ExplorerPanel({ isOpen, onSelectMedia, activeMediaFile }
       <div className="explorer-header">
         <span className="explorer-title">EXPLORER</span>
         <div className="explorer-actions">
+          <button className="explorer-icon-btn" title="Refresh Workspace" onClick={() => fetchAndMergeTree(false)}>
+            <span className="material-symbols-outlined">refresh</span>
+          </button>
           <button className="explorer-icon-btn" title="Open Folder" onClick={handleOpenFolder}>
             <span className="material-symbols-outlined">snippet_folder</span>
           </button>

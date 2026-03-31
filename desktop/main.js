@@ -95,6 +95,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: path.join(__dirname, '..', 'build', 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,

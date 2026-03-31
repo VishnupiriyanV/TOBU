@@ -19,6 +19,7 @@
   "build": {
     "appId": "com.tobu.desktop",
     "productName": "TOBU",
+    "icon": "build/icon.png",
     "directories": {
       "output": "release"
     },
@@ -37,12 +38,15 @@
       }
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": "nsis"
     },
     "mac": {
+      "icon": "build/icon.icns",
       "target": "dmg"
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": "AppImage"
     }
   }
