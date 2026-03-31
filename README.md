@@ -421,14 +421,13 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 ## Authors
-@VishnupiriyanV 
 
-@s-kavinikitha
 
-@nishanthgit3
-
-@Valiant-Vishal
+- [Vishnupiriyan V](https://github.com/VishnupiriyanV)
+- [S Kavinikitha](https://github.com/s-kavinikitha)
+- [Vishal M](https://github.com/Valiant-Vishal)
+- [Nishanth S](https://github.com/NishanthGit3)
 
 <div align="center">
-<sub>Made for the ❤️ of the game .</sub>
+<sub>Built for the ❤️ love of the game.</sub>
 </div>
